@@ -1,14 +1,14 @@
-CC := gcc
-CC_FLAGS := -Wall -Wextra 
+CC := g++
+CC_FLAGS := -std=c++11 -Wall -Wextra 
 
 SRC := src
 INC := include
 BUILD := build
 BIN := bin
-MAIN_EXECUTABLE := main
+MAIN_EXECUTABLE := cpp_lox
 TEST_EXECUTABLE := test
 
-SRCEXT := c
+SRCEXT := cpp
 SOURCES := $(shell find $(SRC) -type f -name *.$(SRCEXT))
 MAIN_SOURCES := $(patsubst $(SRC)/%test.$(SRCEXT),, $(SOURCES))
 MAIN_OBJECTS := $(patsubst $(SRC)/%,$(BUILD)/%,$(MAIN_SOURCES:.$(SRCEXT)=.o))
@@ -16,7 +16,7 @@ TEST_SOURCES := $(patsubst $(SRC)/%main.$(SRCEXT),, $(SOURCES))
 TEST_OBJECTS := $(patsubst $(SRC)/%,$(BUILD)/%,$(TEST_SOURCES:.$(SRCEXT)=.o))
 
 MAIN_LIBRARIES := 
-TEST_LIBRARIES := -lcunit
+TEST_LIBRARIES := 
 INCLUDES := -I $(SRC) -I $(INC)
 
 all: main
