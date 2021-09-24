@@ -66,6 +66,8 @@ namespace Lox
         const boost::any literal;
         const int line;
 
+        std::string typeToString() const;
+
     public:
         Token(TokenType type, std::string lexeme, boost::any literal, int line);
         std::string toString(void) const;

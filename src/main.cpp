@@ -5,17 +5,26 @@
 #include <parser/expression.hpp>
 #include <parser/ast_printer.hpp>
 #include <string>
+#include <boost/any.hpp>
 
-using namespace std;
 using namespace Lox;
+using namespace std;
+using namespace boost;
 
 int main(int argc, char **argv)
 {
-	auto *exp = new Assign(new Token(TokenType::MINUS, "-", NULL, 1), new Literal(new Token(TokenType::MINUS, "-", NULL, 1)));
-
+	//auto *exp = new Assign(new Token(TokenType::IDENTIFIER, "a", NULL, 1), new Literal(new Token(TokenType::NUMBER, "123", NULL, 1)));
+	Expression *exp =
+		new Binary(
+			new Unary(
+				new Token(TokenType::MINUS, "-", NULL, 1),
+				new Literal(new Token(TokenType::NUMBER, "123", NULL, 1))),
+			new Token(TokenType::STAR, "*", NULL, 1),
+			new Grouping(
+				new Literal(new Token(TokenType::NUMBER, "45.67", NULL, 1))));
 	AstPrinter *visitor = new AstPrinter();
 
-	exp->accept(visitor);
+	cout << any_cast<string>(exp->accept(visitor)) << endl;
 
 	return 0;
 }

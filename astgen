@@ -1,0 +1,87 @@
+# /usr/bin/env python3
+
+def write_to_file(full_path, content):
+    try:
+        out_file = open(full_path, mode='w')
+    except Exception:
+        print("failed to open " + full_path)
+        exit(0)
+    out_file.write(content)
+
+def split_lines(lines):
+    line_dict = dict()
+    for line in lines:
+        spl = line.split('=')
+        obj = spl[0].strip()
+        membs = spl[1].split(',')
+        line_dict[obj] = [memb.strip().split() for memb in membs]
+    return line_dict
+
+def gen_code(base_class, line_dict):
+    classes = sorted(list(line_dict.keys()))
+
+    code = ""
+    code += "#ifndef _" + base_class.upper() + "_HPP\n#define _" + base_class.upper() + "_HPP\n\n"
+    code += "#include <scanner/token.hpp>\n#include <boost/any.hpp>\n\n"
+    code += "namespace Lox\n{\n"
+    
+    # generate class declarations, eg: "class Assign;" 
+    for clas in classes:
+        code += "\tclass " + clas + ";\n"
+    code += "\n"
+
+    # generate visitor interface
+    code += "\tclass " + base_class + "Visitor\n\t{\n\tpublic:\n"
+    code += "\t\tvirtual ~" + base_class + "Visitor(void) {}\n" 
+    for clas in classes:
+        # member functions eg: "virtual boost::any visitAssignExpr(const Assign *expr) const = 0;"
+        code += "\t\tvirtual boost::any visit" + clas + base_class + "(const " + clas + " *expr) const = 0;\n"
+    code += "\t};\n\n"
+
+    # generate base class
+    code += "\tclass " + base_class + "\n\t{\n\tpublic:\n\t\tvirtual ~" + base_class + "(void){};\n"
+    code += "\t\tvirtual boost::any accept(const " + base_class + "Visitor *visitor) const = 0;\n\t};\n\n"
+
+    # generate class definitions
+    for clas in classes:
+        # generate class members
+        code += "\tclass " + clas + " : public " + base_class + "\n\t{\n\tpublic:\n"
+        for memb in line_dict[clas]:
+            code += "\t\tconst " + memb[0] + " *" + memb[1] + ";\n"
+        code += "\n"
+        
+        # generate constructor
+        code += "\t\t" + clas + "(" + ", ".join(["const " + " *".join(memb) for memb in line_dict[clas]]) + ")\n\t\t\t: "
+        code += ", ".join([ memb[1] + "(" + memb[1] + ")" for memb in line_dict[clas]]) + "{};\n\n"
+
+        # generate accept override
+        code += "\t\tboost::any accept(const " + base_class + "Visitor *visitor) const override\n\t\t{\n"
+        code += "\t\t\treturn visitor->visit" + clas + base_class + "(this);\n\t\t}\n\t};\n\n"
+    
+    code += "};\n#endif"
+
+    return code
+
+pth = "./src/parser/"
+f_expr = "expression.hpp"
+
+expr = [ \
+    "Assign   = Token name, Expression value",\
+    "Binary   = Expression left, Token op, Expression right",\
+    "Call     = Expression callee, Token paren, std::list<Expression*> arguments",\
+    "Get      = Expression obj, Token name",\
+    "Grouping = Expression expression",\
+    "Literal  = Token value",\
+    "Logical  = Expression left, Token op, Expression right",\
+    "Set      = Expression obj, Token name, Expression value",\
+    "Super    = Token keyword, Token method",\
+    "This     = Token keyword",\
+    "Unary    = Token op, Expression right",\
+    "Variable = Token name"\
+    ]
+
+expr_dict = split_lines(expr)
+expr_code = gen_code("Expression", expr_dict)
+write_to_file(pth + f_expr, expr_code)
+
+print(expr_code)
