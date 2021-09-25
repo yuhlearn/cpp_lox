@@ -3,7 +3,7 @@
 
 #include <scanner/token.hpp>
 #include <string>
-#include <list>
+#include <vector>
 #include <memory>
 #include <unordered_map>
 #include <boost/any.hpp>
@@ -31,7 +31,7 @@ namespace Lox
              {"var", TokenType::VAR},
              {"while", TokenType::WHILE}};
         const std::string source;
-        std::list<Token> tokens;
+        std::vector<Token> tokens;
         int line;
         int start;
         int current;
@@ -50,7 +50,7 @@ namespace Lox
 
     public:
         Scanner(std::string source);
-        const std::list<Token> &scanTokens(void);
+        const std::vector<Token> &scanTokens(void);
     };
 }
 

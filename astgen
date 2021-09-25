@@ -21,8 +21,12 @@ def gen_code(base_class, line_dict):
     classes = sorted(list(line_dict.keys()))
 
     code = ""
-    code += "#ifndef _" + base_class.upper() + "_HPP\n#define _" + base_class.upper() + "_HPP\n\n"
-    code += "#include <scanner/token.hpp>\n#include <boost/any.hpp>\n\n"
+    code += "#ifndef _" + base_class.upper() + "_HPP\n"
+    code += "#define _" + base_class.upper() + "_HPP\n\n"
+    code += "#include <scanner/token.hpp>\n"
+    code += "#include <memory>\n"
+    code += "#include <utility>\n"
+    code += "#include <boost/any.hpp>\n\n"
     code += "namespace Lox\n{\n"
     
     # generate class declarations, eg: "class Assign;" 
@@ -34,41 +38,42 @@ def gen_code(base_class, line_dict):
     code += "\tclass " + base_class + "Visitor\n\t{\n\tpublic:\n"
     code += "\t\tvirtual ~" + base_class + "Visitor(void) {}\n" 
     for clas in classes:
-        # member functions eg: "virtual boost::any visitAssignExpr(const Assign *expr) const = 0;"
-        code += "\t\tvirtual boost::any visit" + clas + base_class + "(const " + clas + " *expr) const = 0;\n"
+        # member functions eg: "virtual boost::any visitAssignExpr(const std::shared_ptr<Assign> expr) const = 0;"
+        code += "\t\tvirtual boost::any visit" + clas + base_class + "(std::shared_ptr<const " + clas + "> expr) const = 0;\n"
     code += "\t};\n\n"
 
     # generate base class
-    code += "\tclass " + base_class + "\n\t{\n\tpublic:\n\t\tvirtual ~" + base_class + "(void){};\n"
-    code += "\t\tvirtual boost::any accept(const " + base_class + "Visitor *visitor) const = 0;\n\t};\n\n"
+    code += "\tclass " + base_class + "\n\t"
+    code += "{\n\tpublic:\n\t\tvirtual ~" + base_class + "(void){};\n"
+    code += "\t\tvirtual boost::any accept(const " + base_class + "Visitor &visitor) const = 0;\n\t};\n\n"
 
     # generate class definitions
     for clas in classes:
         # generate class members
-        code += "\tclass " + clas + " : public " + base_class + "\n\t{\n\tpublic:\n"
+        code += "\tclass " + clas + " : public " + base_class + ", public std::enable_shared_from_this<" + clas + ">\n\t{\n\tpublic:\n"
         for memb in line_dict[clas]:
-            code += "\t\tconst " + memb[0] + " *" + memb[1] + ";\n"
+            code += "\t\tstd::shared_ptr<const " + memb[0] + "> " + memb[1] + ";\n"
         code += "\n"
         
         # generate constructor
-        code += "\t\t" + clas + "(" + ", ".join(["const " + " *".join(memb) for memb in line_dict[clas]]) + ")\n\t\t\t: "
+        code += "\t\t" + clas + "(" + ", ".join(["std::shared_ptr<const " + "> ".join(memb) for memb in line_dict[clas]]) + ")\n\t\t\t: "
         code += ", ".join([ memb[1] + "(" + memb[1] + ")" for memb in line_dict[clas]]) + "{};\n\n"
 
         # generate accept override
-        code += "\t\tboost::any accept(const " + base_class + "Visitor *visitor) const override\n\t\t{\n"
-        code += "\t\t\treturn visitor->visit" + clas + base_class + "(this);\n\t\t}\n\t};\n\n"
+        code += "\t\tboost::any accept(const " + base_class + "Visitor &visitor) const override\n\t\t{\n"
+        code += "\t\t\treturn visitor.visit" + clas + base_class + "(shared_from_this());\n\t\t}\n\t};\n\n"
     
     code += "};\n#endif"
 
     return code
 
-pth = "./src/parser/"
+pth = "./src/ast/"
 f_expr = "expression.hpp"
 
 expr = [ \
     "Assign   = Token name, Expression value",\
     "Binary   = Expression left, Token op, Expression right",\
-    "Call     = Expression callee, Token paren, std::list<Expression*> arguments",\
+    "Call     = Expression callee, Token paren, std::list<std::shared_ptr<Expression>> arguments",\
     "Get      = Expression obj, Token name",\
     "Grouping = Expression expression",\
     "Literal  = Token value",\

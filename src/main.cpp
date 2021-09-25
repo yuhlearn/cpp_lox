@@ -2,8 +2,8 @@
 #include <repl/repl.hpp>
 
 #include <scanner/token.hpp>
-#include <parser/expression.hpp>
-#include <parser/ast_printer.hpp>
+#include <ast/expression.hpp>
+#include <ast/ast_printer.hpp>
 #include <string>
 #include <boost/any.hpp>
 
@@ -11,7 +11,8 @@ using namespace Lox;
 using namespace std;
 using namespace boost;
 
-int main(int argc, char **argv)
+/*
+int main(int, char **)
 {
 	//auto *exp = new Assign(new Token(TokenType::IDENTIFIER, "a", NULL, 1), new Literal(new Token(TokenType::NUMBER, "123", NULL, 1)));
 	Expression *exp =
@@ -22,14 +23,17 @@ int main(int argc, char **argv)
 			new Token(TokenType::STAR, "*", NULL, 1),
 			new Grouping(
 				new Literal(new Token(TokenType::NUMBER, "45.67", NULL, 1))));
+
 	AstPrinter *visitor = new AstPrinter();
 
 	cout << any_cast<string>(exp->accept(visitor)) << endl;
 
+	delete exp;
+
 	return 0;
 }
+*/
 
-/* 
 int main(int argc, char **argv)
 {
 	if (argc > 2)
@@ -47,4 +51,4 @@ int main(int argc, char **argv)
 	}
 
 	return 0;
-} */
+}

@@ -61,14 +61,14 @@ namespace Lox
     class Token
     {
     private:
+        std::string typeToString() const;
+
+    public:
         const TokenType type;
         const std::string lexeme;
         const boost::any literal;
         const int line;
 
-        std::string typeToString() const;
-
-    public:
         Token(TokenType type, std::string lexeme, boost::any literal, int line);
         std::string toString(void) const;
     };

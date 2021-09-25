@@ -74,7 +74,8 @@
 			"complex": "cpp",
 			"cfenv": "cpp",
 			"cinttypes": "cpp",
-			"typeindex": "cpp"
+			"typeindex": "cpp",
+			"strstream": "cpp"
 		}
 	}
 }

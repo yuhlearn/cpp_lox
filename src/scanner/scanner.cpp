@@ -7,7 +7,7 @@ using namespace std;
 using namespace boost;
 
 Scanner::Scanner(string source)
-    : source(source), tokens(list<Token>()), line(1), start(0), current(0)
+    : source(source), tokens(vector<Token>()), line(1), start(0), current(0)
 {
 }
 
@@ -195,7 +195,7 @@ void Scanner::scanToken(void)
     }
 }
 
-const list<Token> &Scanner::scanTokens(void)
+const vector<Token> &Scanner::scanTokens(void)
 {
     while (!isAtEnd())
     {
