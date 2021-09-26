@@ -82,9 +82,9 @@ namespace Lox
 	public:
 		std::shared_ptr<const Expression> callee;
 		std::shared_ptr<const Token> paren;
-		const std::list<std::shared_ptr<Expression>> arguments;
+		std::list<std::shared_ptr<Expression>> arguments;
 
-		Call(std::shared_ptr<const Expression> callee, std::shared_ptr<const Token> paren, const std::list<std::shared_ptr<Expression>> arguments)
+		Call(std::shared_ptr<const Expression> callee, std::shared_ptr<const Token> paren, std::list<std::shared_ptr<Expression>> arguments)
 			: callee(callee), paren(paren), arguments(arguments){};
 
 		boost::any accept(const ExpressionVisitor &visitor) const override
@@ -125,10 +125,11 @@ namespace Lox
 	class Literal : public Expression, public std::enable_shared_from_this<Literal>
 	{
 	public:
-		std::shared_ptr<const Token> value;
+		const TokenType type;
+		const boost::any value;
 
-		Literal(std::shared_ptr<const Token> value)
-			: value(value){};
+		Literal(const TokenType type, const boost::any value)
+			: type(type), value(value){};
 
 		boost::any accept(const ExpressionVisitor &visitor) const override
 		{

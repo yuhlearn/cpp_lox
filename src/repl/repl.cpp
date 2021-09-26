@@ -12,6 +12,8 @@ using namespace Lox;
 using namespace std;
 
 bool REPL::hadError = false;
+bool REPL::hadRuntimeError = false;
+Interpreter REPL::interpreter = Interpreter();
 
 void REPL::error(int line, std::string message)
 {
@@ -24,6 +26,12 @@ void REPL::error(Token token, std::string message)
         report(token.line, " at end ", message);
     else
         report(token.line, " at '" + token.lexeme + "'", message);
+}
+
+void REPL::runtimeError(RuntimeError error)
+{
+    cout << "\n[line " << error.token.line << "] " << error.message << endl;
+    hadRuntimeError = true;
 }
 
 void REPL::report(int line, std::string where, std::string message)
@@ -42,9 +50,10 @@ void REPL::run(string source)
     if (hadError)
         return;
 
-    AstPrinter visitor = AstPrinter();
+    //AstPrinter visitor = AstPrinter();
+    //cout << boost::any_cast<string>(expr->accept(visitor)) << endl;
 
-    cout << boost::any_cast<string>(expr->accept(visitor)) << endl;
+    interpreter.interpret(expr);
 }
 
 void REPL::runFile(char *path)
@@ -66,6 +75,9 @@ void REPL::runFile(char *path)
     run(in_string);
 
     if (hadError)
+        exit(EXIT_FAILURE);
+
+    if (hadRuntimeError)
         exit(EXIT_FAILURE);
 }
 

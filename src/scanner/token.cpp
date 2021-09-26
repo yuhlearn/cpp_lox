@@ -80,6 +80,9 @@ std::string Token::typeToString() const
     case TokenType::NUMBER:
         return "NUMBER";
 
+    case TokenType::BOOLEAN:
+        return "NUMBER";
+
     case TokenType::AND:
         return "AND";
 
@@ -88,9 +91,6 @@ std::string Token::typeToString() const
 
     case TokenType::ELSE:
         return "ELSE";
-
-    case TokenType::FALSE:
-        return "FALSE";
 
     case TokenType::FUN:
         return "FUN";
@@ -119,9 +119,6 @@ std::string Token::typeToString() const
     case TokenType::THIS:
         return "THIS";
 
-    case TokenType::TRUE:
-        return "TRUE";
-
     case TokenType::VAR:
         return "VAR";
 
@@ -132,14 +129,14 @@ std::string Token::typeToString() const
         return "ENDOF";
     }
 
-    throw std::invalid_argument("type does not match a case");
+    //throw std::invalid_argument("type does not match a case");
 }
 
 string Token::toString(void) const
 {
     stringstream ss;
 
-    //ss << "{" << (int)type << ", " << lexeme << ", " << literal.type().name() << ", " << line << "}";
     ss << lexeme;
+
     return ss.str();
 }

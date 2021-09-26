@@ -36,12 +36,12 @@ namespace Lox
         IDENTIFIER,
         STRING,
         NUMBER,
+        BOOLEAN,
 
         // Keywords.
         AND,
         CLASS,
         ELSE,
-        FALSE,
         FUN,
         FOR,
         IF,
@@ -51,7 +51,6 @@ namespace Lox
         RETURN,
         SUPER,
         THIS,
-        TRUE,
         VAR,
         WHILE,
 

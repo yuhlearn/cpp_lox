@@ -102,16 +102,22 @@ void Scanner::matchNumber(void)
 void Scanner::matchIdentifier(void)
 {
     TokenType type = TokenType::IDENTIFIER;
+    string literal;
 
     while (isAlphaNumeric(peek()))
         advance();
 
-    auto search = keywords.find(source.substr(start, current - start));
+    literal = source.substr(start, current - start);
+
+    auto search = keywords.find(literal);
 
     if (search != keywords.end())
         type = search->second;
 
-    addToken(type);
+    if (type != TokenType::BOOLEAN)
+        addToken(type, literal);
+    else
+        addToken(type, "true" == literal);
 }
 
 void Scanner::scanToken(void)

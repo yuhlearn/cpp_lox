@@ -98,9 +98,7 @@ bool Parser::check(TokenType type)
 template <typename... Args>
 bool Parser::match(Args... types)
 {
-    for (TokenType type :
-         {
-             types...})
+    for (TokenType type : {types...})
     {
         if (check(type))
         {
@@ -188,17 +186,17 @@ shared_ptr<Expression> Parser::unary(void)
 
 shared_ptr<Expression> Parser::primary(void)
 {
-    if (match(TokenType::FALSE))
-        return make_shared<Literal>(make_shared<Token>(previous()));
-
-    if (match(TokenType::TRUE))
-        return make_shared<Literal>(make_shared<Token>(previous()));
+    if (match(TokenType::BOOLEAN))
+        return make_shared<Literal>(TokenType::BOOLEAN, previous().literal);
 
     if (match(TokenType::NIL))
-        return make_shared<Literal>(make_shared<Token>(previous()));
+        return make_shared<Literal>(TokenType::NIL, nullptr);
 
-    if (match(TokenType::NUMBER, TokenType::STRING))
-        return make_shared<Literal>(make_shared<Token>(previous()));
+    if (match(TokenType::NUMBER))
+        return make_shared<Literal>(TokenType::NUMBER, previous().literal);
+
+    if (match(TokenType::STRING))
+        return make_shared<Literal>(TokenType::STRING, previous().literal);
 
     if (match(TokenType::LEFT_PAREN))
     {

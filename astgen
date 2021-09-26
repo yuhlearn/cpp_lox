@@ -52,11 +52,16 @@ def gen_code(base_class, line_dict):
         # generate class members
         code += "\tclass " + clas + " : public " + base_class + ", public std::enable_shared_from_this<" + clas + ">\n\t{\n\tpublic:\n"
         for memb in line_dict[clas]:
-            code += "\t\tstd::shared_ptr<const " + memb[0] + "> " + memb[1] + ";\n"
+            if memb[0][:9] != "std::list":
+                code += "\t\tstd::shared_ptr<const " + memb[0] + "> " + memb[1] + ";\n"
+            else:
+                code += "\t\t" + memb[0] + " " + memb[1] + ";\n"
         code += "\n"
         
         # generate constructor
-        code += "\t\t" + clas + "(" + ", ".join(["std::shared_ptr<const " + "> ".join(memb) for memb in line_dict[clas]]) + ")\n\t\t\t: "
+        code += "\t\t" + clas + "(" 
+        code += ", ".join([ "std::shared_ptr<const " + "> ".join(memb) if memb[0][:9] != "std::list" else " ".join(memb) for memb in line_dict[clas]]) 
+        code += ")\n\t\t\t: "
         code += ", ".join([ memb[1] + "(" + memb[1] + ")" for memb in line_dict[clas]]) + "{};\n\n"
 
         # generate accept override
@@ -76,7 +81,7 @@ expr = [ \
     "Call     = Expression callee, Token paren, std::list<std::shared_ptr<Expression>> arguments",\
     "Get      = Expression obj, Token name",\
     "Grouping = Expression expression",\
-    "Literal  = Token value",\
+    "Literal  = TokenType type, boost::any value",\ # These members are not shared_ptr!
     "Logical  = Expression left, Token op, Expression right",\
     "Set      = Expression obj, Token name, Expression value",\
     "Super    = Token keyword, Token method",\
