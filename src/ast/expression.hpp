@@ -125,10 +125,10 @@ namespace Lox
 	class Literal : public Expression, public std::enable_shared_from_this<Literal>
 	{
 	public:
-		const TokenType type;
-		const boost::any value;
+		std::shared_ptr<const TokenType> type;
+		std::shared_ptr<const boost::any> value;
 
-		Literal(const TokenType type, const boost::any value)
+		Literal(std::shared_ptr<const TokenType> type, std::shared_ptr<const boost::any> value)
 			: type(type), value(value){};
 
 		boost::any accept(const ExpressionVisitor &visitor) const override

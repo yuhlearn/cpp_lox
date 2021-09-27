@@ -1,4 +1,4 @@
-# /usr/bin/env python3
+#! /usr/bin/env python3
 
 def write_to_file(full_path, content):
     try:
@@ -17,17 +17,15 @@ def split_lines(lines):
         line_dict[obj] = [memb.strip().split() for memb in membs]
     return line_dict
 
-def gen_code(base_class, line_dict):
+def gen_code(base_class, line_dict, includes):
     classes = sorted(list(line_dict.keys()))
 
     code = ""
     code += "#ifndef _" + base_class.upper() + "_HPP\n"
     code += "#define _" + base_class.upper() + "_HPP\n\n"
-    code += "#include <scanner/token.hpp>\n"
-    code += "#include <memory>\n"
-    code += "#include <utility>\n"
-    code += "#include <boost/any.hpp>\n\n"
-    code += "namespace Lox\n{\n"
+    for incl in includes:
+            code += "#include <" + incl + ">\n"
+    code += "\nnamespace Lox\n{\n"
     
     # generate class declarations, eg: "class Assign;" 
     for clas in classes:
@@ -74,6 +72,7 @@ def gen_code(base_class, line_dict):
 
 pth = "./src/ast/"
 f_expr = "expression.hpp"
+f_stmt = "statement.hpp"
 
 expr = [ \
     "Assign   = Token name, Expression value",\
@@ -81,7 +80,7 @@ expr = [ \
     "Call     = Expression callee, Token paren, std::list<std::shared_ptr<Expression>> arguments",\
     "Get      = Expression obj, Token name",\
     "Grouping = Expression expression",\
-    "Literal  = TokenType type, boost::any value",\ # These members are not shared_ptr!
+    "Literal  = TokenType type, boost::any value",\
     "Logical  = Expression left, Token op, Expression right",\
     "Set      = Expression obj, Token name, Expression value",\
     "Super    = Token keyword, Token method",\
@@ -90,8 +89,22 @@ expr = [ \
     "Variable = Token name"\
     ]
 
+stmt = [ \
+    "Block      = std::list<std::shared_ptr<Statement>> statements",\
+    "Class      = Token name, Variable superclass, std::list<std::shared_ptr<Function>> methods",\
+    "Expression = Expression expression",\
+    "Function   = Token name, std::list<std::shared_ptr<Token>> params, std::list<std::shared_ptr<Statement>> body",\
+    "If         = Expression condition, Statement thenBranch, Statement elseBranch",\
+    "Print      = Expression expression",\
+    "Return     = Token keyword, Expression value",\
+    "Var        = Token name, Expression initializer",\
+    "While      = Expression condition, Statement body"\
+]
+
 expr_dict = split_lines(expr)
-expr_code = gen_code("Expression", expr_dict)
+expr_code = gen_code("Expression", expr_dict, ["scanner/token.hpp","memory","utility","boost/any.hpp"])
 write_to_file(pth + f_expr, expr_code)
 
-print(expr_code)
+stmt_dict = split_lines(stmt)
+stmt_code = gen_code("Statement", stmt_dict, ["scanner/token.hpp","ast/expression.hpp","memory","utility","boost/any.hpp"])
+write_to_file(pth + f_stmt, stmt_code)

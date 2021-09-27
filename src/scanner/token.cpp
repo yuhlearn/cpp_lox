@@ -129,7 +129,8 @@ std::string Token::typeToString() const
         return "ENDOF";
     }
 
-    //throw std::invalid_argument("type does not match a case");
+    // Maybe do something about this
+    throw std::invalid_argument("type does not match a case");
 }
 
 string Token::toString(void) const

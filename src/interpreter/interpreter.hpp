@@ -2,6 +2,7 @@
 #define _INTERPRETER_HPP
 
 #include <ast/expression.hpp>
+#include <ast/value.hpp>
 #include <string>
 #include <memory>
 #include <boost/any.hpp>
@@ -23,11 +24,11 @@ namespace Lox
     {
     private:
         boost::any evaluate(std::shared_ptr<const Expression> expr) const;
-        bool isTruthy(const Literal &literal) const;
-        bool isEqual(const Literal &left, const Literal &right) const;
-        std::string stringify(const Literal &literal);
-        void checkNumberOperand(const Token &token, const Literal &right) const;
-        void checkNumberOperands(const Token &token, const Literal &left, const Literal &right) const;
+        bool isTruthy(const Value &literal) const;
+        bool isEqual(const Value &left, const Value &right) const;
+        std::string stringify(const Value &value);
+        void checkNumberOperand(const Token &token, const Value &right) const;
+        void checkNumberOperands(const Token &token, const Value &left, const Value &right) const;
 
     public:
         boost::any visitAssignExpression(std::shared_ptr<const Assign> expr) const override;

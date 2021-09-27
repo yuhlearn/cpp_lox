@@ -187,17 +187,17 @@ shared_ptr<Expression> Parser::unary(void)
 shared_ptr<Expression> Parser::primary(void)
 {
     if (match(TokenType::BOOLEAN))
-        return make_shared<Literal>(TokenType::BOOLEAN, previous().literal);
-
+        return make_shared<Literal>(make_shared<TokenType>(TokenType::BOOLEAN),
+                                    make_shared<boost::any>(previous().literal));
     if (match(TokenType::NIL))
-        return make_shared<Literal>(TokenType::NIL, nullptr);
-
+        return make_shared<Literal>(make_shared<TokenType>(TokenType::NIL),
+                                    nullptr);
     if (match(TokenType::NUMBER))
-        return make_shared<Literal>(TokenType::NUMBER, previous().literal);
-
+        return make_shared<Literal>(make_shared<TokenType>(TokenType::NUMBER),
+                                    make_shared<boost::any>(previous().literal));
     if (match(TokenType::STRING))
-        return make_shared<Literal>(TokenType::STRING, previous().literal);
-
+        return make_shared<Literal>(make_shared<TokenType>(TokenType::STRING),
+                                    make_shared<boost::any>(previous().literal));
     if (match(TokenType::LEFT_PAREN))
     {
         shared_ptr<Expression> expr = expression();

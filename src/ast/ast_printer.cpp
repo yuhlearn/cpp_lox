@@ -40,20 +40,20 @@ boost::any AstPrinter::visitGroupingExpression(shared_ptr<const Grouping> expr) 
 
 boost::any AstPrinter::visitLiteralExpression(shared_ptr<const Literal> expr) const
 {
-    boost::any value = expr->value;
+    shared_ptr<const boost::any> value = expr->value;
 
-    switch (expr->type)
+    switch (*(expr->type))
     {
     case TokenType::BOOLEAN:
-        return boost::any_cast<bool>(value)
+        return boost::any_cast<bool>(*value)
                    ? (string) "true"
                    : (string) "false";
     case TokenType::NIL:
         return (string) "nil";
     case TokenType::NUMBER:
-        return std::to_string(boost::any_cast<double>(value));
+        return std::to_string(boost::any_cast<double>(*value));
     case TokenType::STRING:
-        return "\"" + boost::any_cast<string>(value) + "\"";
+        return "\"" + boost::any_cast<string>(*value) + "\"";
     default:
         return "?";
     }

@@ -10,7 +10,7 @@ boost::any Interpreter::evaluate(std::shared_ptr<const Expression> expr) const
     return expr->accept(*this);
 }
 
-bool Interpreter::isTruthy(const Literal &literal) const
+bool Interpreter::isTruthy(const Value &literal) const
 {
     if (literal.type == TokenType::NIL)
         return false;
@@ -21,7 +21,7 @@ bool Interpreter::isTruthy(const Literal &literal) const
     return true;
 }
 
-bool Interpreter::isEqual(const Literal &left, const Literal &right) const
+bool Interpreter::isEqual(const Value &left, const Value &right) const
 {
     if (left.type == right.type)
     {
@@ -42,33 +42,33 @@ bool Interpreter::isEqual(const Literal &left, const Literal &right) const
     return false;
 }
 
-std::string Interpreter::stringify(const Literal &literal)
+std::string Interpreter::stringify(const Value &value)
 {
-    switch (literal.type)
+    switch (value.type)
     {
     case TokenType::BOOLEAN:
-        return boost::any_cast<bool>(literal.value)
+        return boost::any_cast<bool>(value.value)
                    ? (string) "true"
                    : (string) "false";
     case TokenType::NIL:
         return (string) "nil";
     case TokenType::NUMBER:
-        return std::to_string(boost::any_cast<double>(literal.value));
+        return std::to_string(boost::any_cast<double>(value.value));
     case TokenType::STRING:
-        return "\"" + boost::any_cast<string>(literal.value) + "\"";
+        return "\"" + boost::any_cast<string>(value.value) + "\"";
     default:
         return "?";
     }
 }
 
-void Interpreter::checkNumberOperand(const Token &token, const Literal &right) const
+void Interpreter::checkNumberOperand(const Token &token, const Value &right) const
 {
     if (TokenType::NUMBER == right.type)
         return;
     throw RuntimeError(token, "Operand must be a number.");
 }
 
-void Interpreter::checkNumberOperands(const Token &token, const Literal &left, const Literal &right) const
+void Interpreter::checkNumberOperands(const Token &token, const Value &left, const Value &right) const
 {
     if (TokenType::NUMBER == left.type && TokenType::NUMBER == right.type)
         return;
@@ -79,71 +79,71 @@ boost::any Interpreter::visitAssignExpression(shared_ptr<const Assign> expr) con
 
 boost::any Interpreter::visitBinaryExpression(shared_ptr<const Binary> expr) const
 {
-    shared_ptr<const Literal> left = boost::any_cast<shared_ptr<const Literal>>(evaluate(expr->left));
-    shared_ptr<const Literal> right = boost::any_cast<shared_ptr<const Literal>>(evaluate(expr->right));
+    auto left = boost::any_cast<Value>(evaluate(expr->left));
+    auto right = boost::any_cast<Value>(evaluate(expr->right));
 
     switch (expr->op->type)
     {
     case TokenType::GREATER:
-        checkNumberOperands(*(expr->op), *left, *right);
-        return make_shared<const Literal>(
+        checkNumberOperands(*(expr->op), left, right);
+        return Value(
             TokenType::BOOLEAN,
-            boost::any_cast<double>(left->value) > boost::any_cast<double>(right->value));
+            boost::any_cast<double>(left.value) > boost::any_cast<double>(right.value));
 
     case TokenType::GREATER_EQUAL:
-        checkNumberOperands(*(expr->op), *left, *right);
-        return make_shared<const Literal>(
+        checkNumberOperands(*(expr->op), left, right);
+        return Value(
             TokenType::BOOLEAN,
-            boost::any_cast<double>(left->value) >= boost::any_cast<double>(right->value));
+            boost::any_cast<double>(left.value) >= boost::any_cast<double>(right.value));
 
     case TokenType::LESS:
-        checkNumberOperands(*(expr->op), *left, *right);
-        return make_shared<const Literal>(
+        checkNumberOperands(*(expr->op), left, right);
+        return Value(
             TokenType::BOOLEAN,
-            boost::any_cast<double>(left->value) < boost::any_cast<double>(right->value));
+            boost::any_cast<double>(left.value) < boost::any_cast<double>(right.value));
 
     case TokenType::LESS_EQUAL:
-        checkNumberOperands(*(expr->op), *left, *right);
-        return make_shared<const Literal>(
+        checkNumberOperands(*(expr->op), left, right);
+        return Value(
             TokenType::BOOLEAN,
-            boost::any_cast<double>(left->value) <= boost::any_cast<double>(right->value));
+            boost::any_cast<double>(left.value) <= boost::any_cast<double>(right.value));
 
     case TokenType::BANG_EQUAL:
-        return make_shared<const Literal>(TokenType::BOOLEAN, !isEqual(*left, *right));
+        return Value(TokenType::BOOLEAN, !isEqual(left, right));
 
     case TokenType::EQUAL_EQUAL:
-        return make_shared<const Literal>(TokenType::BOOLEAN, isEqual(*left, *right));
+        return Value(TokenType::BOOLEAN, isEqual(left, right));
 
     case TokenType::MINUS:
-        checkNumberOperands(*(expr->op), *left, *right);
-        return make_shared<const Literal>(
+        checkNumberOperands(*(expr->op), left, right);
+        return Value(
             TokenType::NUMBER,
-            boost::any_cast<double>(left->value) - boost::any_cast<double>(right->value));
+            boost::any_cast<double>(left.value) - boost::any_cast<double>(right.value));
 
     case TokenType::PLUS:
-        if (left->type == TokenType::NUMBER && right->type == TokenType::NUMBER)
-            return make_shared<const Literal>(
+        if (left.type == TokenType::NUMBER && right.type == TokenType::NUMBER)
+            return Value(
                 TokenType::NUMBER,
-                boost::any_cast<double>(left->value) + boost::any_cast<double>(right->value));
+                boost::any_cast<double>(left.value) + boost::any_cast<double>(right.value));
 
-        if (left->type == TokenType::STRING && right->type == TokenType::STRING)
-            return make_shared<const Literal>(
+        if (left.type == TokenType::STRING && right.type == TokenType::STRING)
+            return Value(
                 TokenType::STRING,
-                boost::any_cast<string>(left->value) + boost::any_cast<string>(right->value));
+                boost::any_cast<string>(left.value) + boost::any_cast<string>(right.value));
 
         throw RuntimeError(*(expr->op), "Operands must be two numbers or two strings.");
 
     case TokenType::SLASH:
-        checkNumberOperands(*(expr->op), *left, *right);
-        return make_shared<const Literal>(
+        checkNumberOperands(*(expr->op), left, right);
+        return Value(
             TokenType::NUMBER,
-            boost::any_cast<double>(left->value) / boost::any_cast<double>(right->value));
+            boost::any_cast<double>(left.value) / boost::any_cast<double>(right.value));
 
     case TokenType::STAR:
-        checkNumberOperands(*(expr->op), *left, *right);
-        return make_shared<const Literal>(
+        checkNumberOperands(*(expr->op), left, right);
+        return Value(
             TokenType::NUMBER,
-            boost::any_cast<double>(left->value) * boost::any_cast<double>(right->value));
+            boost::any_cast<double>(left.value) * boost::any_cast<double>(right.value));
 
     default:
         return NULL;
@@ -160,7 +160,7 @@ boost::any Interpreter::visitGroupingExpression(shared_ptr<const Grouping> expr)
 
 boost::any Interpreter::visitLiteralExpression(shared_ptr<const Literal> expr) const
 {
-    return expr;
+    return Value(*(expr->type), *(expr->value));
 }
 
 boost::any Interpreter::visitLogicalExpression(shared_ptr<const Logical> expr) const {}
@@ -170,15 +170,15 @@ boost::any Interpreter::visitThisExpression(shared_ptr<const This> expr) const {
 
 boost::any Interpreter::visitUnaryExpression(shared_ptr<const Unary> expr) const
 {
-    shared_ptr<const Literal> right = boost::any_cast<shared_ptr<const Literal>>(evaluate(expr->right));
+    auto right = boost::any_cast<Value>(evaluate(expr->right));
 
     switch (expr->op->type)
     {
     case TokenType::BANG:
-        return make_shared<const Literal>(TokenType::BOOLEAN, !isTruthy(*right));
+        return Value(TokenType::BOOLEAN, !isTruthy(right));
     case TokenType::MINUS:
-        checkNumberOperand(*(expr->op), *right);
-        return make_shared<const Literal>(right->type, -boost::any_cast<double>(right->value));
+        checkNumberOperand(*(expr->op), right);
+        return Value(right.type, -boost::any_cast<double>(right.value));
     default:
         return NULL;
     }
@@ -190,9 +190,8 @@ void Interpreter::interpret(std::shared_ptr<Expression> expr)
 {
     try
     {
-        shared_ptr<const Literal> value =
-            boost::any_cast<shared_ptr<const Literal>>(evaluate(expr));
-        cout << stringify(*value) << endl;
+        Value value = boost::any_cast<Value>(evaluate(expr));
+        cout << stringify(value) << endl;
     }
     catch (RuntimeError &error)
     {
