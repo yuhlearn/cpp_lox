@@ -30,7 +30,7 @@ void REPL::error(Token token, std::string message)
 
 void REPL::runtimeError(RuntimeError error)
 {
-    cout << "\n[line " << error.token.line << "] " << error.message << endl;
+    cout << "[line " << error.token.line << "] " << error.message << endl;
     hadRuntimeError = true;
 }
 

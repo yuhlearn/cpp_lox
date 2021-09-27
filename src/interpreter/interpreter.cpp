@@ -88,25 +88,25 @@ boost::any Interpreter::visitBinaryExpression(shared_ptr<const Binary> expr) con
         checkNumberOperands(*(expr->op), *left, *right);
         return make_shared<const Literal>(
             TokenType::BOOLEAN,
-            boost::any_cast<bool>(left->value) > boost::any_cast<bool>(right->value));
+            boost::any_cast<double>(left->value) > boost::any_cast<double>(right->value));
 
     case TokenType::GREATER_EQUAL:
         checkNumberOperands(*(expr->op), *left, *right);
         return make_shared<const Literal>(
             TokenType::BOOLEAN,
-            boost::any_cast<bool>(left->value) >= boost::any_cast<bool>(right->value));
+            boost::any_cast<double>(left->value) >= boost::any_cast<double>(right->value));
 
     case TokenType::LESS:
         checkNumberOperands(*(expr->op), *left, *right);
         return make_shared<const Literal>(
             TokenType::BOOLEAN,
-            boost::any_cast<bool>(left->value) < boost::any_cast<bool>(right->value));
+            boost::any_cast<double>(left->value) < boost::any_cast<double>(right->value));
 
     case TokenType::LESS_EQUAL:
         checkNumberOperands(*(expr->op), *left, *right);
         return make_shared<const Literal>(
             TokenType::BOOLEAN,
-            boost::any_cast<bool>(left->value) <= boost::any_cast<bool>(right->value));
+            boost::any_cast<double>(left->value) <= boost::any_cast<double>(right->value));
 
     case TokenType::BANG_EQUAL:
         return make_shared<const Literal>(TokenType::BOOLEAN, !isEqual(*left, *right));
@@ -127,10 +127,10 @@ boost::any Interpreter::visitBinaryExpression(shared_ptr<const Binary> expr) con
                 boost::any_cast<double>(left->value) + boost::any_cast<double>(right->value));
 
         if (left->type == TokenType::STRING && right->type == TokenType::STRING)
-
             return make_shared<const Literal>(
                 TokenType::STRING,
                 boost::any_cast<string>(left->value) + boost::any_cast<string>(right->value));
+
         throw RuntimeError(*(expr->op), "Operands must be two numbers or two strings.");
 
     case TokenType::SLASH:
