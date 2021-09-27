@@ -45,15 +45,12 @@ void REPL::run(string source)
     Scanner scanner = Scanner(source);
     const vector<Token> &tokens = scanner.scanTokens();
     Parser parser = Parser(tokens);
-    shared_ptr<Expression> expr = parser.parse();
+    vector<shared_ptr<const Statement>> statements = parser.parse();
 
     if (hadError)
         return;
 
-    //AstPrinter visitor = AstPrinter();
-    //cout << boost::any_cast<string>(expr->accept(visitor)) << endl;
-
-    interpreter.interpret(expr);
+    interpreter.interpret(statements);
 }
 
 void REPL::runFile(char *path)

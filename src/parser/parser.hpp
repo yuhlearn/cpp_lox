@@ -3,6 +3,7 @@
 
 #include <scanner/token.hpp>
 #include <ast/expression.hpp>
+#include <ast/statement.hpp>
 #include <vector>
 #include <exception>
 #include <memory>
@@ -34,7 +35,13 @@ namespace Lox
         template <typename... Args>
         bool match(Args... types);
 
+        std::shared_ptr<Statement> printStatement(void);
+        std::shared_ptr<Statement> varDeclaration(void);
+        std::shared_ptr<Statement> expressionStatement(void);
         std::shared_ptr<Expression> expression(void);
+        std::shared_ptr<Statement> statement(void);
+        std::shared_ptr<Statement> declaration(void);
+
         std::shared_ptr<Expression> equality(void);
         std::shared_ptr<Expression> comparison(void);
         std::shared_ptr<Expression> term(void);
@@ -46,7 +53,7 @@ namespace Lox
         Parser(std::vector<Token> tokens);
         ~Parser(void);
 
-        std::shared_ptr<Expression> parse(void);
+        std::vector<std::shared_ptr<const Statement>> parse(void);
     };
 }
 

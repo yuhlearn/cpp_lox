@@ -11,7 +11,7 @@ namespace Lox
 {
 	class Block;
 	class Class;
-	class Expression;
+	class ExpressionStatement;
 	class Function;
 	class If;
 	class Print;
@@ -25,7 +25,7 @@ namespace Lox
 		virtual ~StatementVisitor(void) {}
 		virtual boost::any visitBlockStatement(std::shared_ptr<const Block> expr) const = 0;
 		virtual boost::any visitClassStatement(std::shared_ptr<const Class> expr) const = 0;
-		virtual boost::any visitExpressionStatement(std::shared_ptr<const Expression> expr) const = 0;
+		virtual boost::any visitExpressionStatementStatement(std::shared_ptr<const ExpressionStatement> expr) const = 0;
 		virtual boost::any visitFunctionStatement(std::shared_ptr<const Function> expr) const = 0;
 		virtual boost::any visitIfStatement(std::shared_ptr<const If> expr) const = 0;
 		virtual boost::any visitPrintStatement(std::shared_ptr<const Print> expr) const = 0;
@@ -71,17 +71,17 @@ namespace Lox
 		}
 	};
 
-	class Expression : public Statement, public std::enable_shared_from_this<Expression>
+	class ExpressionStatement : public Statement, public std::enable_shared_from_this<ExpressionStatement>
 	{
 	public:
 		std::shared_ptr<const Expression> expression;
 
-		Expression(std::shared_ptr<const Expression> expression)
+		ExpressionStatement(std::shared_ptr<const Expression> expression)
 			: expression(expression){};
 
 		boost::any accept(const StatementVisitor &visitor) const override
 		{
-			return visitor.visitExpressionStatement(shared_from_this());
+			return visitor.visitExpressionStatementStatement(shared_from_this());
 		}
 	};
 

@@ -12,16 +12,15 @@ Parser::~Parser(void)
 {
 }
 
-shared_ptr<Expression> Parser::parse(void)
+std::vector<std::shared_ptr<const Statement>> Parser::parse(void)
 {
-    try
+    auto statements = vector<shared_ptr<const Statement>>();
+
+    while (!isAtEnd())
     {
-        return expression();
+        statements.push_back(declaration());
     }
-    catch (ParseError &error)
-    {
-        return NULL;
-    }
+    return statements;
 }
 
 Parser::ParseError Parser::error(Token token, string message)
@@ -114,6 +113,61 @@ shared_ptr<Expression> Parser::expression(void)
     return equality();
 }
 
+shared_ptr<Statement> Parser::declaration(void)
+{
+    try
+    {
+        if (match(TokenType::VAR))
+            return varDeclaration();
+        return statement();
+    }
+    catch (ParseError &error)
+    {
+        synchronize();
+        return nullptr;
+    }
+}
+
+shared_ptr<Statement> Parser::statement(void)
+{
+    if (match(TokenType::PRINT))
+        return printStatement();
+
+    return expressionStatement();
+}
+
+shared_ptr<Statement> Parser::printStatement(void)
+{
+    shared_ptr<Expression> value = expression();
+
+    consume(TokenType::SEMICOLON, "Exprect ';' after value.");
+
+    return make_shared<Print>(value);
+}
+
+std::shared_ptr<Statement> Parser::varDeclaration(void)
+{
+    Token name = consume(TokenType::IDENTIFIER, "Expect variable name.");
+
+    shared_ptr<Expression> initializer = nullptr;
+
+    if (match(TokenType::EQUAL))
+        initializer = expression();
+
+    consume(TokenType::SEMICOLON, "Expect ';' after variable declaration.");
+
+    return make_shared<Var>(make_shared<Token>(name), initializer);
+}
+
+shared_ptr<Statement> Parser::expressionStatement(void)
+{
+    shared_ptr<Expression> value = expression();
+
+    consume(TokenType::SEMICOLON, "Exprect ';' after expression.");
+
+    return make_shared<ExpressionStatement>(value);
+}
+
 shared_ptr<Expression> Parser::equality(void)
 {
     shared_ptr<Expression> expr = comparison();
@@ -198,6 +252,9 @@ shared_ptr<Expression> Parser::primary(void)
     if (match(TokenType::STRING))
         return make_shared<Literal>(make_shared<TokenType>(TokenType::STRING),
                                     make_shared<boost::any>(previous().literal));
+    if (match(TokenType::IDENTIFIER))
+        return make_shared<Variable>(make_shared<Token>(previous()));
+
     if (match(TokenType::LEFT_PAREN))
     {
         shared_ptr<Expression> expr = expression();

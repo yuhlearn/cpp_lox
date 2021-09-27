@@ -5,6 +5,10 @@
 using namespace Lox;
 using namespace std;
 
+/* 
+PRIVATE 
+*/
+
 boost::any Interpreter::evaluate(std::shared_ptr<const Expression> expr) const
 {
     return expr->accept(*this);
@@ -74,6 +78,10 @@ void Interpreter::checkNumberOperands(const Token &token, const Value &left, con
         return;
     throw RuntimeError(token, "Operands must be numbers.");
 }
+
+/* 
+EXPRESSIONS 
+*/
 
 boost::any Interpreter::visitAssignExpression(shared_ptr<const Assign> expr) const {}
 
@@ -184,14 +192,68 @@ boost::any Interpreter::visitUnaryExpression(shared_ptr<const Unary> expr) const
     }
 }
 
-boost::any Interpreter::visitVariableExpression(shared_ptr<const Variable> expr) const {}
+boost::any Interpreter::visitVariableExpression(shared_ptr<const Variable> expr) const
+{
+    return environment->get(*(expr->name));
+}
 
-void Interpreter::interpret(std::shared_ptr<Expression> expr)
+/* 
+STATEMENTS 
+*/
+
+boost::any Interpreter::visitBlockStatement(shared_ptr<const Block> stmt) const {}
+boost::any Interpreter::visitClassStatement(shared_ptr<const Class> stmt) const {}
+
+boost::any Interpreter::visitExpressionStatementStatement(shared_ptr<const ExpressionStatement> stmt) const
+{
+    evaluate(stmt->expression);
+
+    return nullptr;
+}
+
+boost::any Interpreter::visitFunctionStatement(shared_ptr<const Function> stmt) const {}
+boost::any Interpreter::visitIfStatement(shared_ptr<const If> stmt) const {}
+
+boost::any Interpreter::visitPrintStatement(shared_ptr<const Print> stmt) const
+{
+    Value value = boost::any_cast<Value>(evaluate(stmt->expression));
+
+    cout << stringify(value) << endl;
+
+    return nullptr;
+}
+
+boost::any Interpreter::visitReturnStatement(shared_ptr<const Return> stmt) const {}
+
+boost::any Interpreter::visitVarStatement(shared_ptr<const Var> stmt) const
+{
+    boost::any value = nullptr;
+
+    if (stmt->initializer != nullptr)
+        value = evaluate(stmt->initializer);
+
+    environment->define(stmt->name->lexeme, value);
+
+    return nullptr;
+}
+
+boost::any Interpreter::visitWhileStatement(shared_ptr<const While> stmt) const {}
+
+/* 
+OTHER 
+*/
+
+void Interpreter::execute(shared_ptr<const Statement> stmt)
+{
+    stmt->accept(*this);
+}
+
+void Interpreter::interpret(vector<shared_ptr<const Statement>> statements)
 {
     try
     {
-        Value value = boost::any_cast<Value>(evaluate(expr));
-        cout << stringify(value) << endl;
+        for (shared_ptr<const Statement> stmt : statements)
+            execute(stmt);
     }
     catch (RuntimeError &error)
     {
