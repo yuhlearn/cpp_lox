@@ -38,10 +38,11 @@ namespace Lox
         std::shared_ptr<Statement> printStatement(void);
         std::shared_ptr<Statement> varDeclaration(void);
         std::shared_ptr<Statement> expressionStatement(void);
+        std::shared_ptr<std::list<std::shared_ptr<Statement>>> block(void);
+        std::shared_ptr<Expression> assignment(void);
         std::shared_ptr<Expression> expression(void);
         std::shared_ptr<Statement> statement(void);
         std::shared_ptr<Statement> declaration(void);
-
         std::shared_ptr<Expression> equality(void);
         std::shared_ptr<Expression> comparison(void);
         std::shared_ptr<Expression> term(void);

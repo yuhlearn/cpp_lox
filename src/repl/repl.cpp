@@ -1,7 +1,6 @@
 #include <repl/repl.hpp>
 #include <scanner/scanner.hpp>
 #include <parser/parser.hpp>
-#include <ast/ast_printer.hpp>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -40,7 +39,7 @@ void REPL::report(int line, std::string where, std::string message)
     hadError = true;
 }
 
-void REPL::run(string source)
+void REPL::run(Environment &env, string source)
 {
     Scanner scanner = Scanner(source);
     const vector<Token> &tokens = scanner.scanTokens();
@@ -50,13 +49,14 @@ void REPL::run(string source)
     if (hadError)
         return;
 
-    interpreter.interpret(statements);
+    interpreter.interpret(env, statements);
 }
 
 void REPL::runFile(char *path)
 {
     ifstream in_file(path);
     string in_string;
+    Environment env = Environment();
 
     if (in_file.is_open())
     {
@@ -69,7 +69,7 @@ void REPL::runFile(char *path)
 
     in_file.close();
 
-    run(in_string);
+    run(env, in_string);
 
     if (hadError)
         exit(EXIT_FAILURE);
@@ -86,9 +86,11 @@ istream &REPL::getline(istream &__is, string &__str)
 
 void REPL::runPrompt(void)
 {
+    Environment env = Environment();
+
     for (string line; getline(cin, line);)
     {
-        run(line);
+        run(env, line);
         hadError = false;
     }
 }

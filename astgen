@@ -37,13 +37,13 @@ def gen_code(base_class, line_dict, includes):
     code += "\t\tvirtual ~" + base_class + "Visitor(void) {}\n" 
     for clas in classes:
         # member functions eg: "virtual boost::any visitAssignExpr(const std::shared_ptr<Assign> expr) const = 0;"
-        code += "\t\tvirtual boost::any visit" + clas + base_class + "(std::shared_ptr<const " + clas + "> expr) const = 0;\n"
+        code += "\t\tvirtual boost::any visit" + clas + base_class + "(Environment &env, std::shared_ptr<const " + clas + "> expr) const = 0;\n"
     code += "\t};\n\n"
 
     # generate base class
     code += "\tclass " + base_class + "\n\t"
     code += "{\n\tpublic:\n\t\tvirtual ~" + base_class + "(void){};\n"
-    code += "\t\tvirtual boost::any accept(const " + base_class + "Visitor &visitor) const = 0;\n\t};\n\n"
+    code += "\t\tvirtual boost::any accept(Environment &env, const " + base_class + "Visitor &visitor) const = 0;\n\t};\n\n"
 
     # generate class definitions
     for clas in classes:
@@ -53,18 +53,19 @@ def gen_code(base_class, line_dict, includes):
             if memb[0][:9] != "std::list":
                 code += "\t\tstd::shared_ptr<const " + memb[0] + "> " + memb[1] + ";\n"
             else:
-                code += "\t\t" + memb[0] + " " + memb[1] + ";\n"
+                code += "\t\tstd::shared_ptr<" + memb[0] + "> " + memb[1] + ";\n"
         code += "\n"
         
         # generate constructor
         code += "\t\t" + clas + "(" 
-        code += ", ".join([ "std::shared_ptr<const " + "> ".join(memb) if memb[0][:9] != "std::list" else " ".join(memb) for memb in line_dict[clas]]) 
+        code += ", ".join([ "std::shared_ptr<const " + "> ".join(memb) if memb[0][:9] != "std::list" else \
+                            "std::shared_ptr<" + "> ".join(memb) for memb in line_dict[clas]]) 
         code += ")\n\t\t\t: "
         code += ", ".join([ memb[1] + "(" + memb[1] + ")" for memb in line_dict[clas]]) + "{};\n\n"
 
         # generate accept override
-        code += "\t\tboost::any accept(const " + base_class + "Visitor &visitor) const override\n\t\t{\n"
-        code += "\t\t\treturn visitor.visit" + clas + base_class + "(shared_from_this());\n\t\t}\n\t};\n\n"
+        code += "\t\tboost::any accept(Environment &env, const " + base_class + "Visitor &visitor) const override\n\t\t{\n"
+        code += "\t\t\treturn visitor.visit" + clas + base_class + "(env, shared_from_this());\n\t\t}\n\t};\n\n"
     
     code += "};\n#endif"
 
@@ -102,9 +103,9 @@ stmt = [ \
 ]
 
 expr_dict = split_lines(expr)
-expr_code = gen_code("Expression", expr_dict, ["scanner/token.hpp","memory","utility","boost/any.hpp"])
+expr_code = gen_code("Expression", expr_dict, ["environment/environment.hpp","scanner/token.hpp","memory","utility","boost/any.hpp"])
 write_to_file(pth + f_expr, expr_code)
 
 stmt_dict = split_lines(stmt)
-stmt_code = gen_code("Statement", stmt_dict, ["scanner/token.hpp","ast/expression.hpp","memory","utility","boost/any.hpp"])
+stmt_code = gen_code("Statement", stmt_dict, ["environment/environment.hpp","scanner/token.hpp","ast/expression.hpp","memory","utility","boost/any.hpp"])
 write_to_file(pth + f_stmt, stmt_code)

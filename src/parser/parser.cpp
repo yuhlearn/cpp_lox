@@ -110,7 +110,7 @@ bool Parser::match(Args... types)
 
 shared_ptr<Expression> Parser::expression(void)
 {
-    return equality();
+    return assignment();
 }
 
 shared_ptr<Statement> Parser::declaration(void)
@@ -133,6 +133,12 @@ shared_ptr<Statement> Parser::statement(void)
     if (match(TokenType::PRINT))
         return printStatement();
 
+    if (match(TokenType::LEFT_BRACE))
+    {
+        auto blockStmt = block();
+        return make_shared<Block>(blockStmt);
+    }
+
     return expressionStatement();
 }
 
@@ -140,7 +146,7 @@ shared_ptr<Statement> Parser::printStatement(void)
 {
     shared_ptr<Expression> value = expression();
 
-    consume(TokenType::SEMICOLON, "Exprect ';' after value.");
+    consume(TokenType::SEMICOLON, "Expect ';' after value.");
 
     return make_shared<Print>(value);
 }
@@ -163,9 +169,38 @@ shared_ptr<Statement> Parser::expressionStatement(void)
 {
     shared_ptr<Expression> value = expression();
 
-    consume(TokenType::SEMICOLON, "Exprect ';' after expression.");
+    consume(TokenType::SEMICOLON, "Expect ';' after expression.");
 
     return make_shared<ExpressionStatement>(value);
+}
+
+shared_ptr<list<shared_ptr<Statement>>> Parser::block(void)
+{
+    auto statements = make_shared<list<shared_ptr<Statement>>>();
+
+    while (!check(TokenType::RIGHT_BRACE) && !isAtEnd())
+        statements->push_back(declaration());
+
+    consume(TokenType::RIGHT_BRACE, "Expect '}' after block.");
+    return statements;
+}
+
+shared_ptr<Expression> Parser::assignment(void)
+{
+    shared_ptr<Expression> expr = equality();
+
+    if (match(TokenType::EQUAL))
+    {
+        Token equals = previous();
+        shared_ptr<Expression> value = assignment();
+
+        if (shared_ptr<Variable> variable = dynamic_pointer_cast<Variable>(expr))
+            return make_shared<Assign>(variable->name, value);
+
+        error(equals, "Invalid assignment target.");
+    }
+
+    return expr;
 }
 
 shared_ptr<Expression> Parser::equality(void)
@@ -258,7 +293,7 @@ shared_ptr<Expression> Parser::primary(void)
     if (match(TokenType::LEFT_PAREN))
     {
         shared_ptr<Expression> expr = expression();
-        consume(TokenType::RIGHT_PAREN, "Exprected ')' after expression.");
+        consume(TokenType::RIGHT_PAREN, "Expected ')' after expression.");
         return make_shared<Grouping>(expr);
     }
 

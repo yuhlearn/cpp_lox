@@ -9,9 +9,9 @@ using namespace std;
 PRIVATE 
 */
 
-boost::any Interpreter::evaluate(std::shared_ptr<const Expression> expr) const
+boost::any Interpreter::evaluate(Environment &env, std::shared_ptr<const Expression> expr) const
 {
-    return expr->accept(*this);
+    return expr->accept(env, *this);
 }
 
 bool Interpreter::isTruthy(const Value &literal) const
@@ -83,12 +83,19 @@ void Interpreter::checkNumberOperands(const Token &token, const Value &left, con
 EXPRESSIONS 
 */
 
-boost::any Interpreter::visitAssignExpression(shared_ptr<const Assign> expr) const {}
-
-boost::any Interpreter::visitBinaryExpression(shared_ptr<const Binary> expr) const
+boost::any Interpreter::visitAssignExpression(Environment &env, shared_ptr<const Assign> expr) const
 {
-    auto left = boost::any_cast<Value>(evaluate(expr->left));
-    auto right = boost::any_cast<Value>(evaluate(expr->right));
+    boost::any value = evaluate(env, expr->value);
+
+    env.assign(*(expr->name), value);
+
+    return value;
+}
+
+boost::any Interpreter::visitBinaryExpression(Environment &env, shared_ptr<const Binary> expr) const
+{
+    auto left = boost::any_cast<Value>(evaluate(env, expr->left));
+    auto right = boost::any_cast<Value>(evaluate(env, expr->right));
 
     switch (expr->op->type)
     {
@@ -158,27 +165,27 @@ boost::any Interpreter::visitBinaryExpression(shared_ptr<const Binary> expr) con
     }
 }
 
-boost::any Interpreter::visitCallExpression(shared_ptr<const Call> expr) const {}
-boost::any Interpreter::visitGetExpression(shared_ptr<const Get> expr) const {}
+boost::any Interpreter::visitCallExpression(Environment &env, shared_ptr<const Call> expr) const {}
+boost::any Interpreter::visitGetExpression(Environment &env, shared_ptr<const Get> expr) const {}
 
-boost::any Interpreter::visitGroupingExpression(shared_ptr<const Grouping> expr) const
+boost::any Interpreter::visitGroupingExpression(Environment &env, shared_ptr<const Grouping> expr) const
 {
-    return evaluate(expr->expression);
+    return evaluate(env, expr->expression);
 }
 
-boost::any Interpreter::visitLiteralExpression(shared_ptr<const Literal> expr) const
+boost::any Interpreter::visitLiteralExpression(Environment &env, shared_ptr<const Literal> expr) const
 {
     return Value(*(expr->type), *(expr->value));
 }
 
-boost::any Interpreter::visitLogicalExpression(shared_ptr<const Logical> expr) const {}
-boost::any Interpreter::visitSetExpression(shared_ptr<const Set> expr) const {}
-boost::any Interpreter::visitSuperExpression(shared_ptr<const Super> expr) const {}
-boost::any Interpreter::visitThisExpression(shared_ptr<const This> expr) const {}
+boost::any Interpreter::visitLogicalExpression(Environment &env, shared_ptr<const Logical> expr) const {}
+boost::any Interpreter::visitSetExpression(Environment &env, shared_ptr<const Set> expr) const {}
+boost::any Interpreter::visitSuperExpression(Environment &env, shared_ptr<const Super> expr) const {}
+boost::any Interpreter::visitThisExpression(Environment &env, shared_ptr<const This> expr) const {}
 
-boost::any Interpreter::visitUnaryExpression(shared_ptr<const Unary> expr) const
+boost::any Interpreter::visitUnaryExpression(Environment &env, shared_ptr<const Unary> expr) const
 {
-    auto right = boost::any_cast<Value>(evaluate(expr->right));
+    auto right = boost::any_cast<Value>(evaluate(env, expr->right));
 
     switch (expr->op->type)
     {
@@ -192,68 +199,84 @@ boost::any Interpreter::visitUnaryExpression(shared_ptr<const Unary> expr) const
     }
 }
 
-boost::any Interpreter::visitVariableExpression(shared_ptr<const Variable> expr) const
+boost::any Interpreter::visitVariableExpression(Environment &env, shared_ptr<const Variable> expr) const
 {
-    return environment->get(*(expr->name));
+    return env.get(*(expr->name));
 }
 
 /* 
 STATEMENTS 
 */
 
-boost::any Interpreter::visitBlockStatement(shared_ptr<const Block> stmt) const {}
-boost::any Interpreter::visitClassStatement(shared_ptr<const Class> stmt) const {}
-
-boost::any Interpreter::visitExpressionStatementStatement(shared_ptr<const ExpressionStatement> stmt) const
+boost::any Interpreter::visitBlockStatement(Environment &env, shared_ptr<const Block> stmt) const
 {
-    evaluate(stmt->expression);
+    Environment new_env = Environment(&env);
+
+    executeBlock(new_env, stmt->statements);
 
     return nullptr;
 }
 
-boost::any Interpreter::visitFunctionStatement(shared_ptr<const Function> stmt) const {}
-boost::any Interpreter::visitIfStatement(shared_ptr<const If> stmt) const {}
-
-boost::any Interpreter::visitPrintStatement(shared_ptr<const Print> stmt) const
+boost::any Interpreter::visitClassStatement(Environment &env, shared_ptr<const Class> stmt) const
 {
-    Value value = boost::any_cast<Value>(evaluate(stmt->expression));
+}
+
+boost::any Interpreter::visitExpressionStatementStatement(Environment &env, shared_ptr<const ExpressionStatement> stmt) const
+{
+    evaluate(env, stmt->expression);
+
+    return nullptr;
+}
+
+boost::any Interpreter::visitFunctionStatement(Environment &env, shared_ptr<const Function> stmt) const {}
+boost::any Interpreter::visitIfStatement(Environment &env, shared_ptr<const If> stmt) const {}
+
+boost::any Interpreter::visitPrintStatement(Environment &env, shared_ptr<const Print> stmt) const
+{
+    Value value = boost::any_cast<Value>(evaluate(env, stmt->expression));
 
     cout << stringify(value) << endl;
 
     return nullptr;
 }
 
-boost::any Interpreter::visitReturnStatement(shared_ptr<const Return> stmt) const {}
+boost::any Interpreter::visitReturnStatement(Environment &env, shared_ptr<const Return> stmt) const {}
 
-boost::any Interpreter::visitVarStatement(shared_ptr<const Var> stmt) const
+boost::any Interpreter::visitVarStatement(Environment &env, shared_ptr<const Var> stmt) const
 {
-    boost::any value = nullptr;
+    boost::any value = Value(TokenType::NIL, nullptr);
 
     if (stmt->initializer != nullptr)
-        value = evaluate(stmt->initializer);
+        value = evaluate(env, stmt->initializer);
 
-    environment->define(stmt->name->lexeme, value);
+    env.define(stmt->name->lexeme, value);
 
     return nullptr;
 }
 
-boost::any Interpreter::visitWhileStatement(shared_ptr<const While> stmt) const {}
+boost::any Interpreter::visitWhileStatement(Environment &env, shared_ptr<const While> stmt) const {}
 
 /* 
 OTHER 
 */
 
-void Interpreter::execute(shared_ptr<const Statement> stmt)
+void Interpreter::execute(Environment &env, shared_ptr<const Statement> stmt) const
 {
-    stmt->accept(*this);
+    stmt->accept(env, *this);
 }
 
-void Interpreter::interpret(vector<shared_ptr<const Statement>> statements)
+void Interpreter::executeBlock(Environment &env, shared_ptr<list<shared_ptr<Statement>>> statements) const
+{
+    for (auto statement : *statements)
+        execute(env, statement);
+}
+
+void Interpreter::interpret(Environment &env, vector<shared_ptr<const Statement>> statements)
 {
     try
     {
         for (shared_ptr<const Statement> stmt : statements)
-            execute(stmt);
+            execute(env, stmt);
     }
     catch (RuntimeError &error)
     {

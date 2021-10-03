@@ -11,12 +11,14 @@ namespace Lox
     class Environment
     {
     private:
-        std::unordered_map<std::string, boost::any> values =
-            std::unordered_map<std::string, boost::any>();
+        std::unordered_map<std::string, boost::any> values;
+        Environment *enclosing;
 
     public:
         Environment(void);
-        void define(const std::string name, const boost::any value);
+        Environment(Environment *enclosing);
+        void define(const std::string &name, const boost::any &value);
+        void assign(const Token &name, const boost::any &value);
         boost::any get(const Token &name);
     };
 }

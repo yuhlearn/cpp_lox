@@ -26,45 +26,42 @@ namespace Lox
     class Interpreter : public ExpressionVisitor, public StatementVisitor
     {
     private:
-        std::unique_ptr<Environment> environment;
-
-        boost::any evaluate(std::shared_ptr<const Expression> expr) const;
+        boost::any evaluate(Environment &env, std::shared_ptr<const Expression> expr) const;
         bool isTruthy(const Value &literal) const;
         bool isEqual(const Value &left, const Value &right) const;
         static std::string stringify(const Value &value);
         void checkNumberOperand(const Token &token, const Value &right) const;
         void checkNumberOperands(const Token &token, const Value &left, const Value &right) const;
+        void executeBlock(Environment &env, std::shared_ptr<std::list<std::shared_ptr<Statement>>> statements) const;
+        void execute(Environment &env, std::shared_ptr<const Statement> stmt) const;
 
     public:
-        Interpreter() : environment(new Environment()) {}
+        Interpreter() {}
         // EXPRESSIONS
-        boost::any
-        visitAssignExpression(std::shared_ptr<const Assign> expr) const override;
-        boost::any visitBinaryExpression(std::shared_ptr<const Binary> expr) const override;
-        boost::any visitCallExpression(std::shared_ptr<const Call> expr) const override;
-        boost::any visitGetExpression(std::shared_ptr<const Get> expr) const override;
-        boost::any visitGroupingExpression(std::shared_ptr<const Grouping> expr) const override;
-        boost::any visitLiteralExpression(std::shared_ptr<const Literal> expr) const override;
-        boost::any visitLogicalExpression(std::shared_ptr<const Logical> expr) const override;
-        boost::any visitSetExpression(std::shared_ptr<const Set> expr) const override;
-        boost::any visitSuperExpression(std::shared_ptr<const Super> expr) const override;
-        boost::any visitThisExpression(std::shared_ptr<const This> expr) const override;
-        boost::any visitUnaryExpression(std::shared_ptr<const Unary> expr) const override;
-        boost::any visitVariableExpression(std::shared_ptr<const Variable> expr) const override;
+        boost::any visitAssignExpression(Environment &env, std::shared_ptr<const Assign> expr) const override;
+        boost::any visitBinaryExpression(Environment &env, std::shared_ptr<const Binary> expr) const override;
+        boost::any visitCallExpression(Environment &env, std::shared_ptr<const Call> expr) const override;
+        boost::any visitGetExpression(Environment &env, std::shared_ptr<const Get> expr) const override;
+        boost::any visitGroupingExpression(Environment &env, std::shared_ptr<const Grouping> expr) const override;
+        boost::any visitLiteralExpression(Environment &env, std::shared_ptr<const Literal> expr) const override;
+        boost::any visitLogicalExpression(Environment &env, std::shared_ptr<const Logical> expr) const override;
+        boost::any visitSetExpression(Environment &env, std::shared_ptr<const Set> expr) const override;
+        boost::any visitSuperExpression(Environment &env, std::shared_ptr<const Super> expr) const override;
+        boost::any visitThisExpression(Environment &env, std::shared_ptr<const This> expr) const override;
+        boost::any visitUnaryExpression(Environment &env, std::shared_ptr<const Unary> expr) const override;
+        boost::any visitVariableExpression(Environment &env, std::shared_ptr<const Variable> expr) const override;
         // STATEMENTS
-        boost::any visitBlockStatement(std::shared_ptr<const Block> stmt) const override;
-        boost::any visitClassStatement(std::shared_ptr<const Class> stmt) const override;
-        boost::any visitExpressionStatementStatement(std::shared_ptr<const ExpressionStatement> stmt) const override;
-        boost::any visitFunctionStatement(std::shared_ptr<const Function> stmt) const override;
-        boost::any visitIfStatement(std::shared_ptr<const If> stmt) const override;
-        boost::any visitPrintStatement(std::shared_ptr<const Print> stmt) const override;
-        boost::any visitReturnStatement(std::shared_ptr<const Return> stmt) const override;
-        boost::any visitVarStatement(std::shared_ptr<const Var> stmt) const override;
-        boost::any visitWhileStatement(std::shared_ptr<const While> stmt) const override;
+        boost::any visitBlockStatement(Environment &env, std::shared_ptr<const Block> stmt) const override;
+        boost::any visitClassStatement(Environment &env, std::shared_ptr<const Class> stmt) const override;
+        boost::any visitExpressionStatementStatement(Environment &env, std::shared_ptr<const ExpressionStatement> stmt) const override;
+        boost::any visitFunctionStatement(Environment &env, std::shared_ptr<const Function> stmt) const override;
+        boost::any visitIfStatement(Environment &env, std::shared_ptr<const If> stmt) const override;
+        boost::any visitPrintStatement(Environment &env, std::shared_ptr<const Print> stmt) const override;
+        boost::any visitReturnStatement(Environment &env, std::shared_ptr<const Return> stmt) const override;
+        boost::any visitVarStatement(Environment &env, std::shared_ptr<const Var> stmt) const override;
+        boost::any visitWhileStatement(Environment &env, std::shared_ptr<const While> stmt) const override;
         // OTHER
-        void execute(std::shared_ptr<const Statement> stmt);
-
-        void interpret(std::vector<std::shared_ptr<const Statement>> statements);
+        void interpret(Environment &env, std::vector<std::shared_ptr<const Statement>> statements);
     };
 }
 
