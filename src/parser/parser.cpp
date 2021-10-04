@@ -130,8 +130,17 @@ shared_ptr<Statement> Parser::declaration(void)
 
 shared_ptr<Statement> Parser::statement(void)
 {
+    if (match(TokenType::FOR))
+        return forStatement();
+
+    if (match(TokenType::IF))
+        return ifStatement();
+
     if (match(TokenType::PRINT))
         return printStatement();
+
+    if (match(TokenType::WHILE))
+        return whileStatement();
 
     if (match(TokenType::LEFT_BRACE))
     {
@@ -140,6 +149,75 @@ shared_ptr<Statement> Parser::statement(void)
     }
 
     return expressionStatement();
+}
+
+shared_ptr<Statement> Parser::forStatement(void)
+{
+    consume(TokenType::LEFT_PAREN, "Expect '(' after 'for'.");
+    shared_ptr<Statement> initializer;
+
+    if (match(TokenType::SEMICOLON))
+        initializer = nullptr;
+    else if (match(TokenType::VAR))
+        initializer = varDeclaration();
+    else
+        initializer = expressionStatement();
+
+    shared_ptr<Expression> condition = nullptr;
+
+    if (!check(TokenType::SEMICOLON))
+        condition = expression();
+
+    consume(TokenType::SEMICOLON, "Expect ';' after loop condition.");
+    shared_ptr<Expression> increment = nullptr;
+
+    if (!check(TokenType::RIGHT_PAREN))
+        increment = expression();
+
+    consume(TokenType::RIGHT_PAREN, "Expect ')' after for clauses.");
+    shared_ptr<Statement> body = statement();
+
+    if (increment != nullptr)
+    {
+        auto stmtList = make_shared<list<shared_ptr<Statement>>>();
+        stmtList->push_back(body);
+        stmtList->push_back(make_shared<ExpressionStatement>(increment));
+
+        body = make_shared<Block>(stmtList);
+    }
+
+    if (condition == nullptr)
+        condition = make_shared<Literal>(
+            make_shared<TokenType>(TokenType::BOOLEAN),
+            make_shared<boost::any>(true));
+
+    body = make_shared<While>(condition, body);
+
+    if (initializer != nullptr)
+    {
+        auto stmtList = make_shared<list<shared_ptr<Statement>>>();
+        stmtList->push_back(initializer);
+        stmtList->push_back(body);
+
+        body = make_shared<Block>(stmtList);
+    }
+
+    return body;
+}
+
+shared_ptr<Statement> Parser::ifStatement(void)
+{
+    consume(TokenType::LEFT_PAREN, " Expect '(' after 'if'.");
+    shared_ptr<Expression> condition = expression();
+    consume(TokenType::RIGHT_PAREN, "Expect ')' after if condition.");
+
+    shared_ptr<Statement> thenBranch = statement();
+    shared_ptr<Statement> elseBranch = nullptr;
+
+    if (match(TokenType::ELSE))
+        elseBranch = statement();
+
+    return make_shared<If>(condition, thenBranch, elseBranch);
 }
 
 shared_ptr<Statement> Parser::printStatement(void)
@@ -165,6 +243,16 @@ std::shared_ptr<Statement> Parser::varDeclaration(void)
     return make_shared<Var>(make_shared<Token>(name), initializer);
 }
 
+std::shared_ptr<Statement> Parser::whileStatement(void)
+{
+    consume(TokenType::LEFT_PAREN, "Expect '(' after 'while'.");
+    shared_ptr<Expression> condition = expression();
+    consume(TokenType::RIGHT_PAREN, "Expect ')' after condition.");
+    shared_ptr<Statement> body = statement();
+
+    return make_shared<While>(condition, body);
+}
+
 shared_ptr<Statement> Parser::expressionStatement(void)
 {
     shared_ptr<Expression> value = expression();
@@ -187,7 +275,7 @@ shared_ptr<list<shared_ptr<Statement>>> Parser::block(void)
 
 shared_ptr<Expression> Parser::assignment(void)
 {
-    shared_ptr<Expression> expr = equality();
+    shared_ptr<Expression> expr = orOp();
 
     if (match(TokenType::EQUAL))
     {
@@ -200,6 +288,32 @@ shared_ptr<Expression> Parser::assignment(void)
         error(equals, "Invalid assignment target.");
     }
 
+    return expr;
+}
+
+shared_ptr<Expression> Parser::orOp(void)
+{
+    shared_ptr<Expression> expr = andOp();
+
+    while (match(TokenType::OR))
+    {
+        shared_ptr<Token> op = make_shared<Token>(previous());
+        shared_ptr<Expression> right = andOp();
+        expr = make_shared<Logical>(expr, op, right);
+    }
+    return expr;
+}
+
+shared_ptr<Expression> Parser::andOp(void)
+{
+    shared_ptr<Expression> expr = equality();
+
+    while (match(TokenType::AND))
+    {
+        shared_ptr<Token> op = make_shared<Token>(previous());
+        shared_ptr<Expression> right = equality();
+        expr = make_shared<Logical>(expr, op, right);
+    }
     return expr;
 }
 
@@ -280,7 +394,7 @@ shared_ptr<Expression> Parser::primary(void)
                                     make_shared<boost::any>(previous().literal));
     if (match(TokenType::NIL))
         return make_shared<Literal>(make_shared<TokenType>(TokenType::NIL),
-                                    nullptr);
+                                    make_shared<boost::any>(previous().literal));
     if (match(TokenType::NUMBER))
         return make_shared<Literal>(make_shared<TokenType>(TokenType::NUMBER),
                                     make_shared<boost::any>(previous().literal));

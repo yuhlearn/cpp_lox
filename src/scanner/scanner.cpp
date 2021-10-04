@@ -4,7 +4,6 @@
 
 using namespace Lox;
 using namespace std;
-using namespace boost;
 
 Scanner::Scanner(string source)
     : source(source), tokens(vector<Token>()), line(1), start(0), current(0)
@@ -31,7 +30,7 @@ char Scanner::advance(void)
     return source[current++];
 }
 
-void Scanner::addToken(TokenType type, any literal = NULL)
+void Scanner::addToken(TokenType type, boost::any literal = nullptr)
 {
     string text = source.substr(start, current - start);
     tokens.push_back(Token(type, text, literal, line));

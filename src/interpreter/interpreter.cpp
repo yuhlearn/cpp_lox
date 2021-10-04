@@ -59,7 +59,7 @@ std::string Interpreter::stringify(const Value &value)
     case TokenType::NUMBER:
         return std::to_string(boost::any_cast<double>(value.value));
     case TokenType::STRING:
-        return "\"" + boost::any_cast<string>(value.value) + "\"";
+        return boost::any_cast<string>(value.value);
     default:
         return "?";
     }
@@ -161,7 +161,7 @@ boost::any Interpreter::visitBinaryExpression(Environment &env, shared_ptr<const
             boost::any_cast<double>(left.value) * boost::any_cast<double>(right.value));
 
     default:
-        return NULL;
+        return Value(TokenType::NIL, nullptr);
     }
 }
 
@@ -175,10 +175,29 @@ boost::any Interpreter::visitGroupingExpression(Environment &env, shared_ptr<con
 
 boost::any Interpreter::visitLiteralExpression(Environment &env, shared_ptr<const Literal> expr) const
 {
-    return Value(*(expr->type), *(expr->value));
+    if (*(expr->type) != TokenType::NIL)
+        return Value(*(expr->type), *(expr->value));
+    return Value(*(expr->type), nullptr);
 }
 
-boost::any Interpreter::visitLogicalExpression(Environment &env, shared_ptr<const Logical> expr) const {}
+boost::any Interpreter::visitLogicalExpression(Environment &env, shared_ptr<const Logical> expr) const
+{
+    auto left = boost::any_cast<Value>(evaluate(env, expr->left));
+
+    if (expr->op->type == TokenType::OR)
+    {
+        if (isTruthy(left))
+            return left;
+    }
+    else
+    {
+        if (!isTruthy(left))
+            return left;
+    }
+
+    return evaluate(env, expr->right);
+}
+
 boost::any Interpreter::visitSetExpression(Environment &env, shared_ptr<const Set> expr) const {}
 boost::any Interpreter::visitSuperExpression(Environment &env, shared_ptr<const Super> expr) const {}
 boost::any Interpreter::visitThisExpression(Environment &env, shared_ptr<const This> expr) const {}
@@ -195,7 +214,7 @@ boost::any Interpreter::visitUnaryExpression(Environment &env, shared_ptr<const 
         checkNumberOperand(*(expr->op), right);
         return Value(right.type, -boost::any_cast<double>(right.value));
     default:
-        return NULL;
+        return Value(TokenType::NIL, nullptr);
     }
 }
 
@@ -229,7 +248,22 @@ boost::any Interpreter::visitExpressionStatementStatement(Environment &env, shar
 }
 
 boost::any Interpreter::visitFunctionStatement(Environment &env, shared_ptr<const Function> stmt) const {}
-boost::any Interpreter::visitIfStatement(Environment &env, shared_ptr<const If> stmt) const {}
+
+boost::any Interpreter::visitIfStatement(Environment &env, shared_ptr<const If> stmt) const
+{
+    auto value = boost::any_cast<Value>(evaluate(env, stmt->condition));
+
+    if (isTruthy(value))
+    {
+        execute(env, stmt->thenBranch);
+    }
+    else if (stmt->elseBranch != nullptr)
+    {
+        execute(env, stmt->elseBranch);
+    }
+
+    return nullptr;
+}
 
 boost::any Interpreter::visitPrintStatement(Environment &env, shared_ptr<const Print> stmt) const
 {
@@ -244,17 +278,25 @@ boost::any Interpreter::visitReturnStatement(Environment &env, shared_ptr<const 
 
 boost::any Interpreter::visitVarStatement(Environment &env, shared_ptr<const Var> stmt) const
 {
-    boost::any value = Value(TokenType::NIL, nullptr);
+    boost::any value;
 
     if (stmt->initializer != nullptr)
         value = evaluate(env, stmt->initializer);
+    else
+        value = Value(TokenType::NIL, nullptr);
 
     env.define(stmt->name->lexeme, value);
 
     return nullptr;
 }
 
-boost::any Interpreter::visitWhileStatement(Environment &env, shared_ptr<const While> stmt) const {}
+boost::any Interpreter::visitWhileStatement(Environment &env, shared_ptr<const While> stmt) const
+{
+    while (isTruthy(boost::any_cast<Value>(evaluate(env, stmt->condition))))
+        execute(env, stmt->body);
+
+    return nullptr;
+}
 
 /* 
 OTHER 
