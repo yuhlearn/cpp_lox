@@ -8,13 +8,24 @@
 
 namespace Lox
 {
+    enum class ValueType
+    {
+        PRIMITIVE,
+        FUNCTION,
+        IDENTIFIER,
+        STRING,
+        NUMBER,
+        BOOLEAN,
+        NIL,
+    };
+
     class Value
     {
     public:
-        const TokenType type;
+        const ValueType type;
         const boost::any value;
 
-        Value(const TokenType type, const boost::any value)
+        Value(const ValueType type, const boost::any value)
             : type(type), value(value){};
     };
 };

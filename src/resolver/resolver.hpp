@@ -1,43 +1,40 @@
-#ifndef _INTERPRETER_HPP
-#define _INTERPRETER_HPP
+#ifndef _RESOLVER_HPP
+#define _RESOLVER_HPP
 
 #include <ast/expression.hpp>
 #include <ast/statement.hpp>
+#include <interpreter/interpreter.hpp>
 #include <environment/environment.hpp>
-#include <ast/value.hpp>
-#include <exception>
-#include <vector>
-#include <string>
-#include <memory>
 #include <boost/any.hpp>
+#include <memory>
+#include <deque>
+#include <unordered_map>
+#include <string>
 
 namespace Lox
 {
-    class RuntimeError : public std::exception
-    {
-    public:
-        const Token token;
-        const std::string message;
-
-        RuntimeError(Token token, std::string message) : token(token), message(message)
-        {
-        }
-    };
-
-    class Interpreter : public ExpressionVisitor, public StatementVisitor
+    class Resolver : public ExpressionVisitor, public StatementVisitor
     {
     private:
-        boost::any evaluate(std::shared_ptr<Environment> env, std::shared_ptr<const Expression> expr) const;
-        bool isTruthy(const Value &literal) const;
-        bool isEqual(const Value &left, const Value &right) const;
-        static std::string stringify(const Value &value);
-        void checkNumberOperand(const Token &token, const Value &right) const;
-        void checkNumberOperands(const Token &token, const Value &left, const Value &right) const;
+        const Interpreter &interpreter;
+
+        const std::unique_ptr<std::deque<std::unordered_map<std::string, bool>>> scopes;
+
+        void define(std::shared_ptr<const Token> name) const;
+        void declare(std::shared_ptr<const Token> name) const;
+        void beginScope(void) const;
+        void endScope(void) const;
+        void resolve(std::shared_ptr<Environment> env, std::shared_ptr<const Expression> expr) const;
+        void resolve(std::shared_ptr<Environment> env, std::shared_ptr<const Statement> stmt) const;
+        void resolve(std::shared_ptr<Environment> env, std::shared_ptr<std::list<std::shared_ptr<Statement>>> statements) const;
+        void resolveLocal(std::shared_ptr<Environment> env,
+                          std::shared_ptr<const Expression> expr,
+                          std::shared_ptr<const Token> name) const;
+        void resolveFunction(std::shared_ptr<Environment> env, std::shared_ptr<const Function> function) const;
 
     public:
-        std::shared_ptr<Environment> globals;
+        Resolver(Interpreter &Interpreter);
 
-        Interpreter(void);
         // EXPRESSIONS
         boost::any visitAssignExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Assign> expr) const override;
         boost::any visitBinaryExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Binary> expr) const override;
@@ -51,6 +48,7 @@ namespace Lox
         boost::any visitThisExpression(std::shared_ptr<Environment> env, std::shared_ptr<const This> expr) const override;
         boost::any visitUnaryExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Unary> expr) const override;
         boost::any visitVariableExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Variable> expr) const override;
+
         // STATEMENTS
         boost::any visitBlockStatement(std::shared_ptr<Environment> env, std::shared_ptr<const Block> stmt) const override;
         boost::any visitClassStatement(std::shared_ptr<Environment> env, std::shared_ptr<const Class> stmt) const override;
@@ -61,10 +59,6 @@ namespace Lox
         boost::any visitReturnStatement(std::shared_ptr<Environment> env, std::shared_ptr<const Return> stmt) const override;
         boost::any visitVarStatement(std::shared_ptr<Environment> env, std::shared_ptr<const Var> stmt) const override;
         boost::any visitWhileStatement(std::shared_ptr<Environment> env, std::shared_ptr<const While> stmt) const override;
-        // OTHER
-        void executeBlock(std::shared_ptr<Environment> env, std::shared_ptr<std::list<std::shared_ptr<Statement>>> statements) const;
-        void execute(std::shared_ptr<Environment> env, std::shared_ptr<const Statement> stmt) const;
-        void interpret(std::vector<std::shared_ptr<const Statement>> statements);
     };
 }
 

@@ -5,12 +5,12 @@ using namespace Lox;
 using namespace std;
 
 Environment::Environment(void)
-    : values(std::unordered_map<std::string, boost::any>()), enclosing(nullptr)
+    : values(std::unordered_map<string, boost::any>()), enclosing(nullptr)
 {
 }
 
-Environment::Environment(Environment *enclosing)
-    : values(std::unordered_map<std::string, boost::any>()), enclosing(enclosing)
+Environment::Environment(shared_ptr<Environment> enclosing)
+    : values(std::unordered_map<string, boost::any>()), enclosing(enclosing)
 {
 }
 

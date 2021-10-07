@@ -39,7 +39,7 @@ void REPL::report(int line, std::string where, std::string message)
     hadError = true;
 }
 
-void REPL::run(Environment &env, string source)
+void REPL::run(string source)
 {
     Scanner scanner = Scanner(source);
     const vector<Token> &tokens = scanner.scanTokens();
@@ -49,14 +49,13 @@ void REPL::run(Environment &env, string source)
     if (hadError)
         return;
 
-    interpreter.interpret(env, statements);
+    interpreter.interpret(statements);
 }
 
 void REPL::runFile(char *path)
 {
     ifstream in_file(path);
     string in_string;
-    Environment env = Environment();
 
     if (in_file.is_open())
     {
@@ -69,7 +68,7 @@ void REPL::runFile(char *path)
 
     in_file.close();
 
-    run(env, in_string);
+    run(in_string);
 
     if (hadError)
         exit(EXIT_FAILURE);
@@ -86,11 +85,9 @@ istream &REPL::getline(istream &__is, string &__str)
 
 void REPL::runPrompt(void)
 {
-    Environment env = Environment();
-
     for (string line; getline(cin, line);)
     {
-        run(env, line);
+        run(line);
         hadError = false;
     }
 }

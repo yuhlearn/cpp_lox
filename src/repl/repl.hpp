@@ -23,7 +23,7 @@ namespace Lox
         static void error(Token token, std::string message);
         static void runtimeError(RuntimeError error);
 
-        static void run(Environment &env, std::string source);
+        static void run(std::string source);
         static void runFile(char *path);
         static void runPrompt(void);
     };

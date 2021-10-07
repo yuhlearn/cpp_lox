@@ -37,13 +37,13 @@ def gen_code(base_class, line_dict, includes):
     code += "\t\tvirtual ~" + base_class + "Visitor(void) {}\n" 
     for clas in classes:
         # member functions eg: "virtual boost::any visitAssignExpr(const std::shared_ptr<Assign> expr) const = 0;"
-        code += "\t\tvirtual boost::any visit" + clas + base_class + "(Environment &env, std::shared_ptr<const " + clas + "> expr) const = 0;\n"
+        code += "\t\tvirtual boost::any visit" + clas + base_class + "(std::shared_ptr<Environment> env, std::shared_ptr<const " + clas + "> expr) const = 0;\n"
     code += "\t};\n\n"
 
     # generate base class
     code += "\tclass " + base_class + "\n\t"
     code += "{\n\tpublic:\n\t\tvirtual ~" + base_class + "(void){};\n"
-    code += "\t\tvirtual boost::any accept(Environment &env, const " + base_class + "Visitor &visitor) const = 0;\n\t};\n\n"
+    code += "\t\tvirtual boost::any accept(std::shared_ptr<Environment> env, const " + base_class + "Visitor &visitor) const = 0;\n\t};\n\n"
 
     # generate class definitions
     for clas in classes:
@@ -64,7 +64,7 @@ def gen_code(base_class, line_dict, includes):
         code += ", ".join([ memb[1] + "(" + memb[1] + ")" for memb in line_dict[clas]]) + "{};\n\n"
 
         # generate accept override
-        code += "\t\tboost::any accept(Environment &env, const " + base_class + "Visitor &visitor) const override\n\t\t{\n"
+        code += "\t\tboost::any accept(std::shared_ptr<Environment> env, const " + base_class + "Visitor &visitor) const override\n\t\t{\n"
         code += "\t\t\treturn visitor.visit" + clas + base_class + "(env, shared_from_this());\n\t\t}\n\t};\n\n"
     
     code += "};\n#endif"

@@ -1,5 +1,5 @@
 #ifndef _PARSER_HPP
-#define _PARSER_CPP
+#define _PARSER_HPP
 
 #include <scanner/token.hpp>
 #include <ast/expression.hpp>
@@ -36,9 +36,11 @@ namespace Lox
         bool match(Args... types);
 
         std::shared_ptr<Statement> printStatement(void);
+        std::shared_ptr<Statement> returnStatement(void);
         std::shared_ptr<Statement> varDeclaration(void);
         std::shared_ptr<Statement> whileStatement(void);
         std::shared_ptr<Statement> expressionStatement(void);
+        std::shared_ptr<Statement> function(std::string kind);
         std::shared_ptr<std::list<std::shared_ptr<Statement>>> block(void);
         std::shared_ptr<Expression> assignment(void);
         std::shared_ptr<Expression> orOp(void);
@@ -53,6 +55,8 @@ namespace Lox
         std::shared_ptr<Expression> term(void);
         std::shared_ptr<Expression> factor(void);
         std::shared_ptr<Expression> unary(void);
+        std::shared_ptr<Expression> finishCall(std::shared_ptr<Expression> callee);
+        std::shared_ptr<Expression> call(void);
         std::shared_ptr<Expression> primary(void);
 
     public:
