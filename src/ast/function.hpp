@@ -25,7 +25,7 @@ namespace Lox
         {
         }
 
-        virtual int arity(void) const override
+        virtual long unsigned int arity(void) const override
         {
             return declaration->params->size();
         }

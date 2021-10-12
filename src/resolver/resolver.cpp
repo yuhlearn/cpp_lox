@@ -132,7 +132,10 @@ boost::any Resolver::visitCallExpression(shared_ptr<Environment> env, shared_ptr
     return nullptr;
 }
 
-boost::any Resolver::visitGetExpression(shared_ptr<Environment> env, shared_ptr<const Get> expr) const { return nullptr; }
+boost::any Resolver::visitGetExpression(shared_ptr<Environment>, shared_ptr<const Get>) const
+{
+    return nullptr;
+}
 
 boost::any Resolver::visitGroupingExpression(shared_ptr<Environment> env, shared_ptr<const Grouping> expr) const
 {
@@ -140,7 +143,7 @@ boost::any Resolver::visitGroupingExpression(shared_ptr<Environment> env, shared
     return nullptr;
 }
 
-boost::any Resolver::visitLiteralExpression(shared_ptr<Environment> env, shared_ptr<const Literal> expr) const
+boost::any Resolver::visitLiteralExpression(shared_ptr<Environment>, shared_ptr<const Literal>) const
 {
     return nullptr;
 }
@@ -152,11 +155,20 @@ boost::any Resolver::visitLogicalExpression(shared_ptr<Environment> env, shared_
     return nullptr;
 }
 
-boost::any Resolver::visitSetExpression(shared_ptr<Environment> env, shared_ptr<const Set> expr) const { return nullptr; }
+boost::any Resolver::visitSetExpression(shared_ptr<Environment>, shared_ptr<const Set>) const
+{
+    return nullptr;
+}
 
-boost::any Resolver::visitSuperExpression(shared_ptr<Environment> env, shared_ptr<const Super> expr) const { return nullptr; }
+boost::any Resolver::visitSuperExpression(shared_ptr<Environment>, shared_ptr<const Super>) const
+{
+    return nullptr;
+}
 
-boost::any Resolver::visitThisExpression(shared_ptr<Environment> env, shared_ptr<const This> expr) const { return nullptr; }
+boost::any Resolver::visitThisExpression(shared_ptr<Environment>, shared_ptr<const This>) const
+{
+    return nullptr;
+}
 
 boost::any Resolver::visitUnaryExpression(shared_ptr<Environment> env, shared_ptr<const Unary> expr) const
 {
@@ -187,7 +199,10 @@ boost::any Resolver::visitBlockStatement(shared_ptr<Environment> env, shared_ptr
     return nullptr;
 }
 
-boost::any Resolver::visitClassStatement(shared_ptr<Environment> env, shared_ptr<const Class> stmt) const { return nullptr; }
+boost::any Resolver::visitClassStatement(shared_ptr<Environment>, shared_ptr<const Class>) const
+{
+    return nullptr;
+}
 
 boost::any Resolver::visitExpressionStatementStatement(shared_ptr<Environment> env,
                                                        shared_ptr<const ExpressionStatement> stmt) const

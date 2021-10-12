@@ -40,12 +40,12 @@ namespace Lox
         {
         }
 
-        virtual int arity(void) const override
+        virtual long unsigned int arity(void) const override
         {
             return 0;
         }
 
-        virtual Value call(const Interpreter &interpreter, const std::list<Value> &args) override
+        virtual Value call(const Interpreter &, const std::list<Value> &args) override
         {
             return func(args);
         }

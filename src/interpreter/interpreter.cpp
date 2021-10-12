@@ -244,8 +244,9 @@ boost::any Interpreter::visitCallExpression(shared_ptr<Environment> env, shared_
     throw RuntimeError(*(expr->paren), "Can only call functions and classes.");
 }
 
-boost::any Interpreter::visitGetExpression(shared_ptr<Environment> env, shared_ptr<const Get> expr) const
+boost::any Interpreter::visitGetExpression(shared_ptr<Environment>, shared_ptr<const Get>) const
 {
+    return nullptr;
 }
 
 boost::any Interpreter::visitGroupingExpression(shared_ptr<Environment> env, shared_ptr<const Grouping> expr) const
@@ -253,7 +254,7 @@ boost::any Interpreter::visitGroupingExpression(shared_ptr<Environment> env, sha
     return evaluate(env, expr->expression);
 }
 
-boost::any Interpreter::visitLiteralExpression(shared_ptr<Environment> env, shared_ptr<const Literal> expr) const
+boost::any Interpreter::visitLiteralExpression(shared_ptr<Environment>, shared_ptr<const Literal> expr) const
 {
     switch (*(expr->type))
     {
@@ -288,9 +289,20 @@ boost::any Interpreter::visitLogicalExpression(shared_ptr<Environment> env, shar
     return evaluate(env, expr->right);
 }
 
-boost::any Interpreter::visitSetExpression(shared_ptr<Environment> env, shared_ptr<const Set> expr) const {}
-boost::any Interpreter::visitSuperExpression(shared_ptr<Environment> env, shared_ptr<const Super> expr) const {}
-boost::any Interpreter::visitThisExpression(shared_ptr<Environment> env, shared_ptr<const This> expr) const {}
+boost::any Interpreter::visitSetExpression(shared_ptr<Environment>, shared_ptr<const Set>) const
+{
+    return nullptr;
+}
+
+boost::any Interpreter::visitSuperExpression(shared_ptr<Environment>, shared_ptr<const Super>) const
+{
+    return nullptr;
+}
+
+boost::any Interpreter::visitThisExpression(shared_ptr<Environment>, shared_ptr<const This>) const
+{
+    return nullptr;
+}
 
 boost::any Interpreter::visitUnaryExpression(shared_ptr<Environment> env, shared_ptr<const Unary> expr) const
 {
@@ -326,8 +338,9 @@ boost::any Interpreter::visitBlockStatement(shared_ptr<Environment> env, shared_
     return nullptr;
 }
 
-boost::any Interpreter::visitClassStatement(shared_ptr<Environment> env, shared_ptr<const Class> stmt) const
+boost::any Interpreter::visitClassStatement(shared_ptr<Environment>, shared_ptr<const Class>) const
 {
+    return nullptr;
 }
 
 boost::any Interpreter::visitExpressionStatementStatement(shared_ptr<Environment> env, shared_ptr<const ExpressionStatement> stmt) const
@@ -419,7 +432,7 @@ void Interpreter::executeBlock(shared_ptr<Environment> env, shared_ptr<list<shar
         execute(env, statement);
 }
 
-void Interpreter::resolve(std::shared_ptr<Environment> env, std::shared_ptr<const Expression> expr, int depth) const
+void Interpreter::resolve(std::shared_ptr<Environment>, std::shared_ptr<const Expression> expr, int depth) const
 {
     (*locals)[expr] = depth; // ->insert(make_pair(expr, depth));
 }

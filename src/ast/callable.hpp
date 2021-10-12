@@ -14,7 +14,7 @@ namespace Lox
     {
     public:
         virtual ~LoxCallable(void){};
-        virtual int arity(void) const = 0;
+        virtual long unsigned int arity(void) const = 0;
         virtual Value call(const Interpreter &interpreter, const std::list<Value> &arguments) = 0;
         virtual std::string toString(void) const = 0;
     };
