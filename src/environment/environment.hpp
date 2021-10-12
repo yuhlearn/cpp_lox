@@ -5,14 +5,14 @@
 #include <unordered_map>
 #include <string>
 #include <memory>
-#include <boost/any.hpp>
+#include <any>
 
 namespace Lox
 {
     class Environment
     {
     private:
-        std::unordered_map<std::string, boost::any> values;
+        std::unordered_map<std::string, std::any> values;
         std::shared_ptr<Environment> enclosing;
 
         Environment *ancestor(const int distance);
@@ -20,11 +20,11 @@ namespace Lox
     public:
         Environment(void);
         Environment(std::shared_ptr<Environment> enclosing);
-        void define(const std::string &name, const boost::any &value);
-        void assign(const Token &name, const boost::any &value);
-        void assignAt(const int distance, const Token &name, const boost::any &value);
-        boost::any get(const Token &name);
-        boost::any getAt(const int distance, const Token &name);
+        void define(const std::string &name, const std::any &value);
+        void assign(const Token &name, const std::any &value);
+        void assignAt(const int distance, const Token &name, const std::any &value);
+        std::any get(const Token &name);
+        std::any getAt(const int distance, const Token &name);
     };
 }
 

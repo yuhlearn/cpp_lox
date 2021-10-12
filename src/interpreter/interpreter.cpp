@@ -23,7 +23,7 @@ Interpreter::Interpreter()
 PRIVATE 
 */
 
-boost::any Interpreter::evaluate(shared_ptr<Environment> env, std::shared_ptr<const Expression> expr) const
+std::any Interpreter::evaluate(shared_ptr<Environment> env, std::shared_ptr<const Expression> expr) const
 {
     return expr->accept(env, *this);
 }
@@ -34,7 +34,7 @@ bool Interpreter::isTruthy(const Value &literal) const
         return false;
 
     if (literal.type == ValueType::BOOLEAN)
-        return boost::any_cast<bool>(literal.value);
+        return std::any_cast<bool>(literal.value);
 
     return true;
 }
@@ -48,11 +48,11 @@ bool Interpreter::isEqual(const Value &left, const Value &right) const
         case ValueType::NIL:
             return true;
         case ValueType::BOOLEAN:
-            return boost::any_cast<bool>(left.value) == boost::any_cast<bool>(right.value);
+            return std::any_cast<bool>(left.value) == std::any_cast<bool>(right.value);
         case ValueType::NUMBER:
-            return boost::any_cast<double>(left.value) == boost::any_cast<double>(right.value);
+            return std::any_cast<double>(left.value) == std::any_cast<double>(right.value);
         case ValueType::STRING:
-            return boost::any_cast<string>(left.value) == boost::any_cast<string>(right.value);
+            return std::any_cast<string>(left.value) == std::any_cast<string>(right.value);
         default:
             return false;
         }
@@ -65,19 +65,19 @@ std::string Interpreter::stringify(const Value &value)
     switch (value.type)
     {
     case ValueType::FUNCTION:
-        return boost::any_cast<shared_ptr<LoxFunction>>(value.value)->toString();
+        return std::any_cast<shared_ptr<LoxFunction>>(value.value)->toString();
     case ValueType::PRIMITIVE:
-        return boost::any_cast<shared_ptr<LoxPrimitive>>(value.value)->toString();
+        return std::any_cast<shared_ptr<LoxPrimitive>>(value.value)->toString();
     case ValueType::BOOLEAN:
-        return boost::any_cast<bool>(value.value)
+        return std::any_cast<bool>(value.value)
                    ? (string) "true"
                    : (string) "false";
     case ValueType::NIL:
         return (string) "nil";
     case ValueType::NUMBER:
-        return std::to_string(boost::any_cast<double>(value.value));
+        return std::to_string(std::any_cast<double>(value.value));
     case ValueType::STRING:
-        return boost::any_cast<string>(value.value);
+        return std::any_cast<string>(value.value);
     default:
         return "?";
     }
@@ -97,9 +97,9 @@ void Interpreter::checkNumberOperands(const Token &token, const Value &left, con
     throw RuntimeError(token, "Operands must be numbers.");
 }
 
-boost::any Interpreter::lookUpVariable(std::shared_ptr<Environment> env,
-                                       std::shared_ptr<const Token> name,
-                                       std::shared_ptr<const Expression> expr) const
+std::any Interpreter::lookUpVariable(std::shared_ptr<Environment> env,
+                                     std::shared_ptr<const Token> name,
+                                     std::shared_ptr<const Expression> expr) const
 {
     auto distance = locals->find(expr);
 
@@ -117,9 +117,9 @@ boost::any Interpreter::lookUpVariable(std::shared_ptr<Environment> env,
 EXPRESSIONS 
 */
 
-boost::any Interpreter::visitAssignExpression(shared_ptr<Environment> env, shared_ptr<const Assign> expr) const
+std::any Interpreter::visitAssignExpression(shared_ptr<Environment> env, shared_ptr<const Assign> expr) const
 {
-    boost::any value = evaluate(env, expr->value);
+    std::any value = evaluate(env, expr->value);
 
     auto distance = locals->find(expr);
 
@@ -135,10 +135,10 @@ boost::any Interpreter::visitAssignExpression(shared_ptr<Environment> env, share
     return value;
 }
 
-boost::any Interpreter::visitBinaryExpression(shared_ptr<Environment> env, shared_ptr<const Binary> expr) const
+std::any Interpreter::visitBinaryExpression(shared_ptr<Environment> env, shared_ptr<const Binary> expr) const
 {
-    auto left = boost::any_cast<Value>(evaluate(env, expr->left));
-    auto right = boost::any_cast<Value>(evaluate(env, expr->right));
+    auto left = std::any_cast<Value>(evaluate(env, expr->left));
+    auto right = std::any_cast<Value>(evaluate(env, expr->right));
 
     switch (expr->op->type)
     {
@@ -146,25 +146,25 @@ boost::any Interpreter::visitBinaryExpression(shared_ptr<Environment> env, share
         checkNumberOperands(*(expr->op), left, right);
         return Value(
             ValueType::BOOLEAN,
-            boost::any_cast<double>(left.value) > boost::any_cast<double>(right.value));
+            std::any_cast<double>(left.value) > std::any_cast<double>(right.value));
 
     case TokenType::GREATER_EQUAL:
         checkNumberOperands(*(expr->op), left, right);
         return Value(
             ValueType::BOOLEAN,
-            boost::any_cast<double>(left.value) >= boost::any_cast<double>(right.value));
+            std::any_cast<double>(left.value) >= std::any_cast<double>(right.value));
 
     case TokenType::LESS:
         checkNumberOperands(*(expr->op), left, right);
         return Value(
             ValueType::BOOLEAN,
-            boost::any_cast<double>(left.value) < boost::any_cast<double>(right.value));
+            std::any_cast<double>(left.value) < std::any_cast<double>(right.value));
 
     case TokenType::LESS_EQUAL:
         checkNumberOperands(*(expr->op), left, right);
         return Value(
             ValueType::BOOLEAN,
-            boost::any_cast<double>(left.value) <= boost::any_cast<double>(right.value));
+            std::any_cast<double>(left.value) <= std::any_cast<double>(right.value));
 
     case TokenType::BANG_EQUAL:
         return Value(ValueType::BOOLEAN, !isEqual(left, right));
@@ -176,18 +176,18 @@ boost::any Interpreter::visitBinaryExpression(shared_ptr<Environment> env, share
         checkNumberOperands(*(expr->op), left, right);
         return Value(
             ValueType::NUMBER,
-            boost::any_cast<double>(left.value) - boost::any_cast<double>(right.value));
+            std::any_cast<double>(left.value) - std::any_cast<double>(right.value));
 
     case TokenType::PLUS:
         if (left.type == ValueType::NUMBER && right.type == ValueType::NUMBER)
             return Value(
                 ValueType::NUMBER,
-                boost::any_cast<double>(left.value) + boost::any_cast<double>(right.value));
+                std::any_cast<double>(left.value) + std::any_cast<double>(right.value));
 
         if (left.type == ValueType::STRING && right.type == ValueType::STRING)
             return Value(
                 ValueType::STRING,
-                boost::any_cast<string>(left.value) + boost::any_cast<string>(right.value));
+                std::any_cast<string>(left.value) + std::any_cast<string>(right.value));
 
         throw RuntimeError(*(expr->op), "Operands must be two numbers or two strings.");
 
@@ -195,30 +195,30 @@ boost::any Interpreter::visitBinaryExpression(shared_ptr<Environment> env, share
         checkNumberOperands(*(expr->op), left, right);
         return Value(
             ValueType::NUMBER,
-            boost::any_cast<double>(left.value) / boost::any_cast<double>(right.value));
+            std::any_cast<double>(left.value) / std::any_cast<double>(right.value));
 
     case TokenType::STAR:
         checkNumberOperands(*(expr->op), left, right);
         return Value(
             ValueType::NUMBER,
-            boost::any_cast<double>(left.value) * boost::any_cast<double>(right.value));
+            std::any_cast<double>(left.value) * std::any_cast<double>(right.value));
 
     default:
         return Value(ValueType::NIL, nullptr);
     }
 }
 
-boost::any Interpreter::visitCallExpression(shared_ptr<Environment> env, shared_ptr<const Call> expr) const
+std::any Interpreter::visitCallExpression(shared_ptr<Environment> env, shared_ptr<const Call> expr) const
 {
-    auto callee = boost::any_cast<Value>(evaluate(env, expr->callee));
+    auto callee = std::any_cast<Value>(evaluate(env, expr->callee));
     auto arguments = make_shared<list<Value>>();
 
     for (auto arg : *expr->arguments)
-        arguments->push_back(boost::any_cast<Value>(evaluate(env, arg)));
+        arguments->push_back(std::any_cast<Value>(evaluate(env, arg)));
 
     if (callee.type == ValueType::PRIMITIVE)
     {
-        auto function = boost::any_cast<shared_ptr<LoxPrimitive>>(callee.value);
+        auto function = std::any_cast<shared_ptr<LoxPrimitive>>(callee.value);
 
         if (arguments->size() != function->arity())
             throw RuntimeError(*(expr->paren),
@@ -230,7 +230,7 @@ boost::any Interpreter::visitCallExpression(shared_ptr<Environment> env, shared_
     }
     if (callee.type == ValueType::FUNCTION)
     {
-        auto function = boost::any_cast<shared_ptr<LoxFunction>>(callee.value);
+        auto function = std::any_cast<shared_ptr<LoxFunction>>(callee.value);
 
         if (arguments->size() != function->arity())
             throw RuntimeError(*(expr->paren),
@@ -244,17 +244,17 @@ boost::any Interpreter::visitCallExpression(shared_ptr<Environment> env, shared_
     throw RuntimeError(*(expr->paren), "Can only call functions and classes.");
 }
 
-boost::any Interpreter::visitGetExpression(shared_ptr<Environment>, shared_ptr<const Get>) const
+std::any Interpreter::visitGetExpression(shared_ptr<Environment>, shared_ptr<const Get>) const
 {
     return nullptr;
 }
 
-boost::any Interpreter::visitGroupingExpression(shared_ptr<Environment> env, shared_ptr<const Grouping> expr) const
+std::any Interpreter::visitGroupingExpression(shared_ptr<Environment> env, shared_ptr<const Grouping> expr) const
 {
     return evaluate(env, expr->expression);
 }
 
-boost::any Interpreter::visitLiteralExpression(shared_ptr<Environment>, shared_ptr<const Literal> expr) const
+std::any Interpreter::visitLiteralExpression(shared_ptr<Environment>, shared_ptr<const Literal> expr) const
 {
     switch (*(expr->type))
     {
@@ -271,9 +271,9 @@ boost::any Interpreter::visitLiteralExpression(shared_ptr<Environment>, shared_p
     }
 }
 
-boost::any Interpreter::visitLogicalExpression(shared_ptr<Environment> env, shared_ptr<const Logical> expr) const
+std::any Interpreter::visitLogicalExpression(shared_ptr<Environment> env, shared_ptr<const Logical> expr) const
 {
-    auto left = boost::any_cast<Value>(evaluate(env, expr->left));
+    auto left = std::any_cast<Value>(evaluate(env, expr->left));
 
     if (expr->op->type == TokenType::OR)
     {
@@ -289,24 +289,24 @@ boost::any Interpreter::visitLogicalExpression(shared_ptr<Environment> env, shar
     return evaluate(env, expr->right);
 }
 
-boost::any Interpreter::visitSetExpression(shared_ptr<Environment>, shared_ptr<const Set>) const
+std::any Interpreter::visitSetExpression(shared_ptr<Environment>, shared_ptr<const Set>) const
 {
     return nullptr;
 }
 
-boost::any Interpreter::visitSuperExpression(shared_ptr<Environment>, shared_ptr<const Super>) const
+std::any Interpreter::visitSuperExpression(shared_ptr<Environment>, shared_ptr<const Super>) const
 {
     return nullptr;
 }
 
-boost::any Interpreter::visitThisExpression(shared_ptr<Environment>, shared_ptr<const This>) const
+std::any Interpreter::visitThisExpression(shared_ptr<Environment>, shared_ptr<const This>) const
 {
     return nullptr;
 }
 
-boost::any Interpreter::visitUnaryExpression(shared_ptr<Environment> env, shared_ptr<const Unary> expr) const
+std::any Interpreter::visitUnaryExpression(shared_ptr<Environment> env, shared_ptr<const Unary> expr) const
 {
-    auto right = boost::any_cast<Value>(evaluate(env, expr->right));
+    auto right = std::any_cast<Value>(evaluate(env, expr->right));
 
     switch (expr->op->type)
     {
@@ -314,13 +314,13 @@ boost::any Interpreter::visitUnaryExpression(shared_ptr<Environment> env, shared
         return Value(ValueType::BOOLEAN, !isTruthy(right));
     case TokenType::MINUS:
         checkNumberOperand(*(expr->op), right);
-        return Value(right.type, -boost::any_cast<double>(right.value));
+        return Value(right.type, -std::any_cast<double>(right.value));
     default:
         return Value(ValueType::NIL, nullptr);
     }
 }
 
-boost::any Interpreter::visitVariableExpression(shared_ptr<Environment> env, shared_ptr<const Variable> expr) const
+std::any Interpreter::visitVariableExpression(shared_ptr<Environment> env, shared_ptr<const Variable> expr) const
 {
     return lookUpVariable(env, expr->name, expr);
 }
@@ -329,7 +329,7 @@ boost::any Interpreter::visitVariableExpression(shared_ptr<Environment> env, sha
 STATEMENTS 
 */
 
-boost::any Interpreter::visitBlockStatement(shared_ptr<Environment> env, shared_ptr<const Block> stmt) const
+std::any Interpreter::visitBlockStatement(shared_ptr<Environment> env, shared_ptr<const Block> stmt) const
 {
     shared_ptr<Environment> new_env = make_shared<Environment>(env);
 
@@ -338,19 +338,19 @@ boost::any Interpreter::visitBlockStatement(shared_ptr<Environment> env, shared_
     return nullptr;
 }
 
-boost::any Interpreter::visitClassStatement(shared_ptr<Environment>, shared_ptr<const Class>) const
+std::any Interpreter::visitClassStatement(shared_ptr<Environment>, shared_ptr<const Class>) const
 {
     return nullptr;
 }
 
-boost::any Interpreter::visitExpressionStatementStatement(shared_ptr<Environment> env, shared_ptr<const ExpressionStatement> stmt) const
+std::any Interpreter::visitExpressionStatementStatement(shared_ptr<Environment> env, shared_ptr<const ExpressionStatement> stmt) const
 {
     evaluate(env, stmt->expression);
 
     return nullptr;
 }
 
-boost::any Interpreter::visitFunctionStatement(shared_ptr<Environment> env, shared_ptr<const Function> stmt) const
+std::any Interpreter::visitFunctionStatement(shared_ptr<Environment> env, shared_ptr<const Function> stmt) const
 {
     shared_ptr<LoxFunction> function = make_shared<LoxFunction>(stmt, env);
 
@@ -359,9 +359,9 @@ boost::any Interpreter::visitFunctionStatement(shared_ptr<Environment> env, shar
     return nullptr;
 }
 
-boost::any Interpreter::visitIfStatement(shared_ptr<Environment> env, shared_ptr<const If> stmt) const
+std::any Interpreter::visitIfStatement(shared_ptr<Environment> env, shared_ptr<const If> stmt) const
 {
-    auto value = boost::any_cast<Value>(evaluate(env, stmt->condition));
+    auto value = std::any_cast<Value>(evaluate(env, stmt->condition));
 
     if (isTruthy(value))
     {
@@ -375,29 +375,29 @@ boost::any Interpreter::visitIfStatement(shared_ptr<Environment> env, shared_ptr
     return nullptr;
 }
 
-boost::any Interpreter::visitPrintStatement(shared_ptr<Environment> env, shared_ptr<const Print> stmt) const
+std::any Interpreter::visitPrintStatement(shared_ptr<Environment> env, shared_ptr<const Print> stmt) const
 {
-    Value value = boost::any_cast<Value>(evaluate(env, stmt->expression));
+    Value value = std::any_cast<Value>(evaluate(env, stmt->expression));
 
     cout << stringify(value) << endl;
 
     return nullptr;
 }
 
-boost::any Interpreter::visitReturnStatement(shared_ptr<Environment> env, shared_ptr<const Return> stmt) const
+std::any Interpreter::visitReturnStatement(shared_ptr<Environment> env, shared_ptr<const Return> stmt) const
 {
     if (stmt->value != nullptr)
     {
-        Value value = boost::any_cast<Value>(evaluate(env, stmt->value));
+        Value value = std::any_cast<Value>(evaluate(env, stmt->value));
         throw ReturnValue(value);
     }
 
     throw ReturnValue(Value(ValueType::NIL, nullptr));
 }
 
-boost::any Interpreter::visitVarStatement(shared_ptr<Environment> env, shared_ptr<const Var> stmt) const
+std::any Interpreter::visitVarStatement(shared_ptr<Environment> env, shared_ptr<const Var> stmt) const
 {
-    boost::any value;
+    std::any value;
 
     if (stmt->initializer != nullptr)
         value = evaluate(env, stmt->initializer);
@@ -409,9 +409,9 @@ boost::any Interpreter::visitVarStatement(shared_ptr<Environment> env, shared_pt
     return nullptr;
 }
 
-boost::any Interpreter::visitWhileStatement(shared_ptr<Environment> env, shared_ptr<const While> stmt) const
+std::any Interpreter::visitWhileStatement(shared_ptr<Environment> env, shared_ptr<const While> stmt) const
 {
-    while (isTruthy(boost::any_cast<Value>(evaluate(env, stmt->condition))))
+    while (isTruthy(std::any_cast<Value>(evaluate(env, stmt->condition))))
         execute(env, stmt->body);
 
     return nullptr;

@@ -30,7 +30,7 @@ char Scanner::advance(void)
     return source[current++];
 }
 
-void Scanner::addToken(TokenType type, boost::any literal = nullptr)
+void Scanner::addToken(TokenType type, std::any literal = nullptr)
 {
     string text = source.substr(start, current - start);
     tokens.push_back(Token(type, text, literal, line));

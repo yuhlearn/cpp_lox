@@ -3,9 +3,8 @@
 
 using namespace Lox;
 using namespace std;
-using namespace boost;
 
-Token::Token(TokenType type, string lexeme, any literal, int line)
+Token::Token(TokenType type, string lexeme, std::any literal, int line)
     : type(type), lexeme(lexeme), literal(literal), line(line)
 {
 }

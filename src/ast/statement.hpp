@@ -6,7 +6,7 @@
 #include <ast/expression.hpp>
 #include <memory>
 #include <utility>
-#include <boost/any.hpp>
+#include <any>
 
 namespace Lox
 {
@@ -24,15 +24,15 @@ namespace Lox
 	{
 	public:
 		virtual ~StatementVisitor(void) {}
-		virtual boost::any visitBlockStatement(std::shared_ptr<Environment> env, std::shared_ptr<const Block> expr) const = 0;
-		virtual boost::any visitClassStatement(std::shared_ptr<Environment> env, std::shared_ptr<const Class> expr) const = 0;
-		virtual boost::any visitExpressionStatementStatement(std::shared_ptr<Environment> env, std::shared_ptr<const ExpressionStatement> expr) const = 0;
-		virtual boost::any visitFunctionStatement(std::shared_ptr<Environment> env, std::shared_ptr<const Function> expr) const = 0;
-		virtual boost::any visitIfStatement(std::shared_ptr<Environment> env, std::shared_ptr<const If> expr) const = 0;
-		virtual boost::any visitPrintStatement(std::shared_ptr<Environment> env, std::shared_ptr<const Print> expr) const = 0;
-		virtual boost::any visitReturnStatement(std::shared_ptr<Environment> env, std::shared_ptr<const Return> expr) const = 0;
-		virtual boost::any visitVarStatement(std::shared_ptr<Environment> env, std::shared_ptr<const Var> expr) const = 0;
-		virtual boost::any visitWhileStatement(std::shared_ptr<Environment> env, std::shared_ptr<const While> expr) const = 0;
+		virtual std::any visitBlockStatement(std::shared_ptr<Environment> env, std::shared_ptr<const Block> expr) const = 0;
+		virtual std::any visitClassStatement(std::shared_ptr<Environment> env, std::shared_ptr<const Class> expr) const = 0;
+		virtual std::any visitExpressionStatementStatement(std::shared_ptr<Environment> env, std::shared_ptr<const ExpressionStatement> expr) const = 0;
+		virtual std::any visitFunctionStatement(std::shared_ptr<Environment> env, std::shared_ptr<const Function> expr) const = 0;
+		virtual std::any visitIfStatement(std::shared_ptr<Environment> env, std::shared_ptr<const If> expr) const = 0;
+		virtual std::any visitPrintStatement(std::shared_ptr<Environment> env, std::shared_ptr<const Print> expr) const = 0;
+		virtual std::any visitReturnStatement(std::shared_ptr<Environment> env, std::shared_ptr<const Return> expr) const = 0;
+		virtual std::any visitVarStatement(std::shared_ptr<Environment> env, std::shared_ptr<const Var> expr) const = 0;
+		virtual std::any visitWhileStatement(std::shared_ptr<Environment> env, std::shared_ptr<const While> expr) const = 0;
 	};
 
 	class Statement
@@ -40,7 +40,7 @@ namespace Lox
 	public:
 		virtual ~Statement(void){};
 		Statement(void){};
-		virtual boost::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const = 0;
+		virtual std::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const = 0;
 	};
 
 	class Block : public Statement, public std::enable_shared_from_this<Block>
@@ -51,7 +51,7 @@ namespace Lox
 		Block(std::shared_ptr<std::list<std::shared_ptr<Statement>>> statements)
 			: statements(statements){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const override
 		{
 			return visitor.visitBlockStatement(env, shared_from_this());
 		}
@@ -67,7 +67,7 @@ namespace Lox
 		Class(std::shared_ptr<const Token> name, std::shared_ptr<const Variable> superclass, std::shared_ptr<std::list<std::shared_ptr<Function>>> methods)
 			: name(name), superclass(superclass), methods(methods){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const override
 		{
 			return visitor.visitClassStatement(env, shared_from_this());
 		}
@@ -81,7 +81,7 @@ namespace Lox
 		ExpressionStatement(std::shared_ptr<const Expression> expression)
 			: expression(expression){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const override
 		{
 			return visitor.visitExpressionStatementStatement(env, shared_from_this());
 		}
@@ -97,7 +97,7 @@ namespace Lox
 		Function(std::shared_ptr<const Token> name, std::shared_ptr<std::list<std::shared_ptr<Token>>> params, std::shared_ptr<std::list<std::shared_ptr<Statement>>> body)
 			: name(name), params(params), body(body){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const override
 		{
 			return visitor.visitFunctionStatement(env, shared_from_this());
 		}
@@ -113,7 +113,7 @@ namespace Lox
 		If(std::shared_ptr<const Expression> condition, std::shared_ptr<const Statement> thenBranch, std::shared_ptr<const Statement> elseBranch)
 			: condition(condition), thenBranch(thenBranch), elseBranch(elseBranch){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const override
 		{
 			return visitor.visitIfStatement(env, shared_from_this());
 		}
@@ -127,7 +127,7 @@ namespace Lox
 		Print(std::shared_ptr<const Expression> expression)
 			: expression(expression){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const override
 		{
 			return visitor.visitPrintStatement(env, shared_from_this());
 		}
@@ -142,7 +142,7 @@ namespace Lox
 		Return(std::shared_ptr<const Token> keyword, std::shared_ptr<const Expression> value)
 			: keyword(keyword), value(value){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const override
 		{
 			return visitor.visitReturnStatement(env, shared_from_this());
 		}
@@ -157,7 +157,7 @@ namespace Lox
 		Var(std::shared_ptr<const Token> name, std::shared_ptr<const Expression> initializer)
 			: name(name), initializer(initializer){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const override
 		{
 			return visitor.visitVarStatement(env, shared_from_this());
 		}
@@ -172,7 +172,7 @@ namespace Lox
 		While(std::shared_ptr<const Expression> condition, std::shared_ptr<const Statement> body)
 			: condition(condition), body(body){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const override
 		{
 			return visitor.visitWhileStatement(env, shared_from_this());
 		}

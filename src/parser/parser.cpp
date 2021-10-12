@@ -194,7 +194,7 @@ shared_ptr<Statement> Parser::forStatement(void)
     if (condition == nullptr)
         condition = make_shared<Literal>(
             make_shared<TokenType>(TokenType::BOOLEAN),
-            make_shared<boost::any>(true));
+            make_shared<std::any>(true));
 
     body = make_shared<While>(condition, body);
 
@@ -474,16 +474,16 @@ shared_ptr<Expression> Parser::primary(void)
 {
     if (match(TokenType::BOOLEAN))
         return make_shared<Literal>(make_shared<TokenType>(TokenType::BOOLEAN),
-                                    make_shared<boost::any>(previous().literal));
+                                    make_shared<std::any>(previous().literal));
     if (match(TokenType::NIL))
         return make_shared<Literal>(make_shared<TokenType>(TokenType::NIL),
-                                    make_shared<boost::any>(previous().literal));
+                                    make_shared<std::any>(previous().literal));
     if (match(TokenType::NUMBER))
         return make_shared<Literal>(make_shared<TokenType>(TokenType::NUMBER),
-                                    make_shared<boost::any>(previous().literal));
+                                    make_shared<std::any>(previous().literal));
     if (match(TokenType::STRING))
         return make_shared<Literal>(make_shared<TokenType>(TokenType::STRING),
-                                    make_shared<boost::any>(previous().literal));
+                                    make_shared<std::any>(previous().literal));
     if (match(TokenType::IDENTIFIER))
         return make_shared<Variable>(make_shared<Token>(previous()));
 

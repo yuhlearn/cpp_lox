@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
-#include <boost/any.hpp>
+#include <any>
 
 namespace Lox
 {
@@ -39,7 +39,7 @@ namespace Lox
         bool isAlpha(char c);
         bool isAlphaNumeric(char c);
         char advance(void);
-        void addToken(TokenType tokenType, boost::any literal);
+        void addToken(TokenType tokenType, std::any literal);
         bool match(char expected);
         char peek();
         char peekNext();

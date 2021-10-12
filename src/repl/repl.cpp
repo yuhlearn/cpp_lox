@@ -5,7 +5,7 @@
 #include <fstream>
 #include <vector>
 #include <memory>
-#include <boost/any.hpp>
+#include <any>
 
 using namespace Lox;
 using namespace std;

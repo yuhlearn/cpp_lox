@@ -5,21 +5,21 @@ using namespace Lox;
 using namespace std;
 
 Environment::Environment(void)
-    : values(std::unordered_map<string, boost::any>()), enclosing(nullptr)
+    : values(std::unordered_map<string, std::any>()), enclosing(nullptr)
 {
 }
 
 Environment::Environment(shared_ptr<Environment> enclosing)
-    : values(std::unordered_map<string, boost::any>()), enclosing(enclosing)
+    : values(std::unordered_map<string, std::any>()), enclosing(enclosing)
 {
 }
 
-void Environment::define(const string &name, const boost::any &value)
+void Environment::define(const string &name, const std::any &value)
 {
     values[name] = value;
 }
 
-void Environment::assign(const Token &name, const boost::any &value)
+void Environment::assign(const Token &name, const std::any &value)
 {
     if (values.find(name.lexeme) != values.end())
     {
@@ -35,7 +35,7 @@ void Environment::assign(const Token &name, const boost::any &value)
     throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
 }
 
-void Environment::assignAt(const int distance, const Token &name, const boost::any &value)
+void Environment::assignAt(const int distance, const Token &name, const std::any &value)
 {
     Environment *env = ancestor(distance);
 
@@ -47,7 +47,7 @@ void Environment::assignAt(const int distance, const Token &name, const boost::a
     throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
 }
 
-boost::any Environment::get(const Token &name)
+std::any Environment::get(const Token &name)
 {
     auto search = values.find(name.lexeme);
 
@@ -60,7 +60,7 @@ boost::any Environment::get(const Token &name)
     throw RuntimeError(name, "Undefined global variable '" + name.lexeme + "'.");
 }
 
-boost::any Environment::getAt(const int distance, const Token &name)
+std::any Environment::getAt(const int distance, const Token &name)
 {
     Environment *env = ancestor(distance);
 

@@ -108,21 +108,21 @@ void Resolver::resolveFunction(shared_ptr<Environment> env,
 }
 
 // EXPRESSIONS
-boost::any Resolver::visitAssignExpression(shared_ptr<Environment> env, shared_ptr<const Assign> expr) const
+std::any Resolver::visitAssignExpression(shared_ptr<Environment> env, shared_ptr<const Assign> expr) const
 {
     resolve(env, expr->value);
     resolveLocal(env, expr, expr->name);
     return nullptr;
 }
 
-boost::any Resolver::visitBinaryExpression(shared_ptr<Environment> env, shared_ptr<const Binary> expr) const
+std::any Resolver::visitBinaryExpression(shared_ptr<Environment> env, shared_ptr<const Binary> expr) const
 {
     resolve(env, expr->left);
     resolve(env, expr->right);
     return nullptr;
 }
 
-boost::any Resolver::visitCallExpression(shared_ptr<Environment> env, shared_ptr<const Call> expr) const
+std::any Resolver::visitCallExpression(shared_ptr<Environment> env, shared_ptr<const Call> expr) const
 {
     resolve(env, expr->callee);
 
@@ -132,51 +132,51 @@ boost::any Resolver::visitCallExpression(shared_ptr<Environment> env, shared_ptr
     return nullptr;
 }
 
-boost::any Resolver::visitGetExpression(shared_ptr<Environment>, shared_ptr<const Get>) const
+std::any Resolver::visitGetExpression(shared_ptr<Environment>, shared_ptr<const Get>) const
 {
     return nullptr;
 }
 
-boost::any Resolver::visitGroupingExpression(shared_ptr<Environment> env, shared_ptr<const Grouping> expr) const
+std::any Resolver::visitGroupingExpression(shared_ptr<Environment> env, shared_ptr<const Grouping> expr) const
 {
     resolve(env, expr->expression);
     return nullptr;
 }
 
-boost::any Resolver::visitLiteralExpression(shared_ptr<Environment>, shared_ptr<const Literal>) const
+std::any Resolver::visitLiteralExpression(shared_ptr<Environment>, shared_ptr<const Literal>) const
 {
     return nullptr;
 }
 
-boost::any Resolver::visitLogicalExpression(shared_ptr<Environment> env, shared_ptr<const Logical> expr) const
+std::any Resolver::visitLogicalExpression(shared_ptr<Environment> env, shared_ptr<const Logical> expr) const
 {
     resolve(env, expr->left);
     resolve(env, expr->right);
     return nullptr;
 }
 
-boost::any Resolver::visitSetExpression(shared_ptr<Environment>, shared_ptr<const Set>) const
+std::any Resolver::visitSetExpression(shared_ptr<Environment>, shared_ptr<const Set>) const
 {
     return nullptr;
 }
 
-boost::any Resolver::visitSuperExpression(shared_ptr<Environment>, shared_ptr<const Super>) const
+std::any Resolver::visitSuperExpression(shared_ptr<Environment>, shared_ptr<const Super>) const
 {
     return nullptr;
 }
 
-boost::any Resolver::visitThisExpression(shared_ptr<Environment>, shared_ptr<const This>) const
+std::any Resolver::visitThisExpression(shared_ptr<Environment>, shared_ptr<const This>) const
 {
     return nullptr;
 }
 
-boost::any Resolver::visitUnaryExpression(shared_ptr<Environment> env, shared_ptr<const Unary> expr) const
+std::any Resolver::visitUnaryExpression(shared_ptr<Environment> env, shared_ptr<const Unary> expr) const
 {
     resolve(env, expr->right);
     return nullptr;
 }
 
-boost::any Resolver::visitVariableExpression(shared_ptr<Environment> env, shared_ptr<const Variable> expr) const
+std::any Resolver::visitVariableExpression(shared_ptr<Environment> env, shared_ptr<const Variable> expr) const
 {
     if (!scopes->empty())
     {
@@ -191,7 +191,7 @@ boost::any Resolver::visitVariableExpression(shared_ptr<Environment> env, shared
 }
 
 // STATEMENTS
-boost::any Resolver::visitBlockStatement(shared_ptr<Environment> env, shared_ptr<const Block> stmt) const
+std::any Resolver::visitBlockStatement(shared_ptr<Environment> env, shared_ptr<const Block> stmt) const
 {
     beginScope();
     resolve(env, stmt->statements);
@@ -199,19 +199,19 @@ boost::any Resolver::visitBlockStatement(shared_ptr<Environment> env, shared_ptr
     return nullptr;
 }
 
-boost::any Resolver::visitClassStatement(shared_ptr<Environment>, shared_ptr<const Class>) const
+std::any Resolver::visitClassStatement(shared_ptr<Environment>, shared_ptr<const Class>) const
 {
     return nullptr;
 }
 
-boost::any Resolver::visitExpressionStatementStatement(shared_ptr<Environment> env,
-                                                       shared_ptr<const ExpressionStatement> stmt) const
+std::any Resolver::visitExpressionStatementStatement(shared_ptr<Environment> env,
+                                                     shared_ptr<const ExpressionStatement> stmt) const
 {
     resolve(env, stmt->expression);
     return nullptr;
 }
 
-boost::any Resolver::visitFunctionStatement(shared_ptr<Environment> env, shared_ptr<const Function> stmt) const
+std::any Resolver::visitFunctionStatement(shared_ptr<Environment> env, shared_ptr<const Function> stmt) const
 {
     declare(stmt->name);
     define(stmt->name);
@@ -220,7 +220,7 @@ boost::any Resolver::visitFunctionStatement(shared_ptr<Environment> env, shared_
     return nullptr;
 }
 
-boost::any Resolver::visitIfStatement(shared_ptr<Environment> env, shared_ptr<const If> stmt) const
+std::any Resolver::visitIfStatement(shared_ptr<Environment> env, shared_ptr<const If> stmt) const
 {
     resolve(env, stmt->condition);
     resolve(env, stmt->thenBranch);
@@ -231,13 +231,13 @@ boost::any Resolver::visitIfStatement(shared_ptr<Environment> env, shared_ptr<co
     return nullptr;
 }
 
-boost::any Resolver::visitPrintStatement(shared_ptr<Environment> env, shared_ptr<const Print> stmt) const
+std::any Resolver::visitPrintStatement(shared_ptr<Environment> env, shared_ptr<const Print> stmt) const
 {
     resolve(env, stmt->expression);
     return nullptr;
 }
 
-boost::any Resolver::visitReturnStatement(shared_ptr<Environment> env, shared_ptr<const Return> stmt) const
+std::any Resolver::visitReturnStatement(shared_ptr<Environment> env, shared_ptr<const Return> stmt) const
 {
     if (*currentFunction == FunctionType::NONE)
         REPL::error(*(stmt->keyword), "Can't return from top-level code.");
@@ -248,7 +248,7 @@ boost::any Resolver::visitReturnStatement(shared_ptr<Environment> env, shared_pt
     return nullptr;
 }
 
-boost::any Resolver::visitVarStatement(shared_ptr<Environment> env, shared_ptr<const Var> stmt) const
+std::any Resolver::visitVarStatement(shared_ptr<Environment> env, shared_ptr<const Var> stmt) const
 {
     declare(stmt->name);
 
@@ -259,7 +259,7 @@ boost::any Resolver::visitVarStatement(shared_ptr<Environment> env, shared_ptr<c
     return nullptr;
 }
 
-boost::any Resolver::visitWhileStatement(shared_ptr<Environment> env, shared_ptr<const While> stmt) const
+std::any Resolver::visitWhileStatement(shared_ptr<Environment> env, shared_ptr<const While> stmt) const
 {
     resolve(env, stmt->condition);
     resolve(env, stmt->body);

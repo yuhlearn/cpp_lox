@@ -3,7 +3,7 @@
 
 #include <string>
 #include <list>
-#include <boost/any.hpp>
+#include <any>
 
 namespace Lox
 {
@@ -65,10 +65,10 @@ namespace Lox
     public:
         const TokenType type;
         const std::string lexeme;
-        const boost::any literal;
+        const std::any literal;
         const int line;
 
-        Token(TokenType type, std::string lexeme, boost::any literal, int line);
+        Token(TokenType type, std::string lexeme, std::any literal, int line);
         std::string toString(void) const;
     };
 }

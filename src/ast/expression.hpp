@@ -5,7 +5,7 @@
 #include <scanner/token.hpp>
 #include <memory>
 #include <utility>
-#include <boost/any.hpp>
+#include <any>
 
 namespace Lox
 {
@@ -26,18 +26,18 @@ namespace Lox
 	{
 	public:
 		virtual ~ExpressionVisitor(void) {}
-		virtual boost::any visitAssignExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Assign> expr) const = 0;
-		virtual boost::any visitBinaryExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Binary> expr) const = 0;
-		virtual boost::any visitCallExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Call> expr) const = 0;
-		virtual boost::any visitGetExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Get> expr) const = 0;
-		virtual boost::any visitGroupingExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Grouping> expr) const = 0;
-		virtual boost::any visitLiteralExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Literal> expr) const = 0;
-		virtual boost::any visitLogicalExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Logical> expr) const = 0;
-		virtual boost::any visitSetExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Set> expr) const = 0;
-		virtual boost::any visitSuperExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Super> expr) const = 0;
-		virtual boost::any visitThisExpression(std::shared_ptr<Environment> env, std::shared_ptr<const This> expr) const = 0;
-		virtual boost::any visitUnaryExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Unary> expr) const = 0;
-		virtual boost::any visitVariableExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Variable> expr) const = 0;
+		virtual std::any visitAssignExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Assign> expr) const = 0;
+		virtual std::any visitBinaryExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Binary> expr) const = 0;
+		virtual std::any visitCallExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Call> expr) const = 0;
+		virtual std::any visitGetExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Get> expr) const = 0;
+		virtual std::any visitGroupingExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Grouping> expr) const = 0;
+		virtual std::any visitLiteralExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Literal> expr) const = 0;
+		virtual std::any visitLogicalExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Logical> expr) const = 0;
+		virtual std::any visitSetExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Set> expr) const = 0;
+		virtual std::any visitSuperExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Super> expr) const = 0;
+		virtual std::any visitThisExpression(std::shared_ptr<Environment> env, std::shared_ptr<const This> expr) const = 0;
+		virtual std::any visitUnaryExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Unary> expr) const = 0;
+		virtual std::any visitVariableExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Variable> expr) const = 0;
 	};
 
 	class Expression
@@ -45,7 +45,7 @@ namespace Lox
 	public:
 		virtual ~Expression(void){};
 		Expression(void){};
-		virtual boost::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const = 0;
+		virtual std::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const = 0;
 	};
 
 	class Assign : public Expression, public std::enable_shared_from_this<Assign>
@@ -57,7 +57,7 @@ namespace Lox
 		Assign(std::shared_ptr<const Token> name, std::shared_ptr<const Expression> value)
 			: name(name), value(value){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
 		{
 			return visitor.visitAssignExpression(env, shared_from_this());
 		}
@@ -73,7 +73,7 @@ namespace Lox
 		Binary(std::shared_ptr<const Expression> left, std::shared_ptr<const Token> op, std::shared_ptr<const Expression> right)
 			: left(left), op(op), right(right){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
 		{
 			return visitor.visitBinaryExpression(env, shared_from_this());
 		}
@@ -89,7 +89,7 @@ namespace Lox
 		Call(std::shared_ptr<const Expression> callee, std::shared_ptr<const Token> paren, std::shared_ptr<std::list<std::shared_ptr<Expression>>> arguments)
 			: callee(callee), paren(paren), arguments(arguments){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
 		{
 			return visitor.visitCallExpression(env, shared_from_this());
 		}
@@ -104,7 +104,7 @@ namespace Lox
 		Get(std::shared_ptr<const Expression> obj, std::shared_ptr<const Token> name)
 			: obj(obj), name(name){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
 		{
 			return visitor.visitGetExpression(env, shared_from_this());
 		}
@@ -118,7 +118,7 @@ namespace Lox
 		Grouping(std::shared_ptr<const Expression> expression)
 			: expression(expression){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
 		{
 			return visitor.visitGroupingExpression(env, shared_from_this());
 		}
@@ -128,12 +128,12 @@ namespace Lox
 	{
 	public:
 		std::shared_ptr<const TokenType> type;
-		std::shared_ptr<const boost::any> value;
+		std::shared_ptr<const std::any> value;
 
-		Literal(std::shared_ptr<const TokenType> type, std::shared_ptr<const boost::any> value)
+		Literal(std::shared_ptr<const TokenType> type, std::shared_ptr<const std::any> value)
 			: type(type), value(value){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
 		{
 			return visitor.visitLiteralExpression(env, shared_from_this());
 		}
@@ -149,7 +149,7 @@ namespace Lox
 		Logical(std::shared_ptr<const Expression> left, std::shared_ptr<const Token> op, std::shared_ptr<const Expression> right)
 			: left(left), op(op), right(right){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
 		{
 			return visitor.visitLogicalExpression(env, shared_from_this());
 		}
@@ -165,7 +165,7 @@ namespace Lox
 		Set(std::shared_ptr<const Expression> obj, std::shared_ptr<const Token> name, std::shared_ptr<const Expression> value)
 			: obj(obj), name(name), value(value){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
 		{
 			return visitor.visitSetExpression(env, shared_from_this());
 		}
@@ -180,7 +180,7 @@ namespace Lox
 		Super(std::shared_ptr<const Token> keyword, std::shared_ptr<const Token> method)
 			: keyword(keyword), method(method){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
 		{
 			return visitor.visitSuperExpression(env, shared_from_this());
 		}
@@ -194,7 +194,7 @@ namespace Lox
 		This(std::shared_ptr<const Token> keyword)
 			: keyword(keyword){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
 		{
 			return visitor.visitThisExpression(env, shared_from_this());
 		}
@@ -209,7 +209,7 @@ namespace Lox
 		Unary(std::shared_ptr<const Token> op, std::shared_ptr<const Expression> right)
 			: op(op), right(right){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
 		{
 			return visitor.visitUnaryExpression(env, shared_from_this());
 		}
@@ -223,7 +223,7 @@ namespace Lox
 		Variable(std::shared_ptr<const Token> name)
 			: name(name){};
 
-		boost::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
+		std::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const override
 		{
 			return visitor.visitVariableExpression(env, shared_from_this());
 		}

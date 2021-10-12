@@ -4,11 +4,10 @@
 #include <scanner/token.hpp>
 #include <ast/expression.hpp>
 #include <string>
-#include <boost/any.hpp>
+#include <any>
 
 using namespace Lox;
 using namespace std;
-using namespace boost;
 
 int main(int argc, char **argv)
 {

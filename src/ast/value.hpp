@@ -4,7 +4,7 @@
 #include <scanner/token.hpp>
 #include <memory>
 #include <utility>
-#include <boost/any.hpp>
+#include <any>
 
 namespace Lox
 {
@@ -23,9 +23,9 @@ namespace Lox
     {
     public:
         const ValueType type;
-        const boost::any value;
+        const std::any value;
 
-        Value(const ValueType type, const boost::any value)
+        Value(const ValueType type, const std::any value)
             : type(type), value(value){};
     };
 };
