@@ -43,6 +43,7 @@ def gen_code(base_class, line_dict, includes):
     # generate base class
     code += "\tclass " + base_class + "\n\t"
     code += "{\n\tpublic:\n\t\tvirtual ~" + base_class + "(void){};\n"
+    code += "\t\t" + base_class + "(void){};\n"
     code += "\t\tvirtual boost::any accept(std::shared_ptr<Environment> env, const " + base_class + "Visitor &visitor) const = 0;\n\t};\n\n"
 
     # generate class definitions

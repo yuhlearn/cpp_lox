@@ -1,5 +1,5 @@
 CC := g++
-CC_FLAGS := -std=c++11 -Wall -Wextra 
+CC_FLAGS := -std=c++17 -Wall -Wextra 
 
 SRC := src
 INC := include

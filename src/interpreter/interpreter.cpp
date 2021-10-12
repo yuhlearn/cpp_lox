@@ -9,7 +9,11 @@
 using namespace Lox;
 using namespace std;
 
-Interpreter::Interpreter() : globals(make_shared<Environment>())
+Interpreter::Interpreter()
+    : environment(make_shared<Environment>()),
+      globals(make_shared<Environment>()),
+      locals(make_shared<unordered_map<shared_ptr<const Expression>, int>>())
+
 {
     auto clock = make_shared<LoxPrimitive>(LoxPrimitiveFn::clock);
     globals->define("clock", Value(ValueType::PRIMITIVE, clock));
@@ -93,6 +97,22 @@ void Interpreter::checkNumberOperands(const Token &token, const Value &left, con
     throw RuntimeError(token, "Operands must be numbers.");
 }
 
+boost::any Interpreter::lookUpVariable(std::shared_ptr<Environment> env,
+                                       std::shared_ptr<const Token> name,
+                                       std::shared_ptr<const Expression> expr) const
+{
+    auto distance = locals->find(expr);
+
+    if (distance != locals->end())
+    {
+        return env->getAt(distance->second, *name);
+    }
+    else
+    {
+        return globals->get(*name);
+    }
+}
+
 /* 
 EXPRESSIONS 
 */
@@ -101,7 +121,16 @@ boost::any Interpreter::visitAssignExpression(shared_ptr<Environment> env, share
 {
     boost::any value = evaluate(env, expr->value);
 
-    env->assign(*(expr->name), value);
+    auto distance = locals->find(expr);
+
+    if (distance != locals->end())
+    {
+        env->assignAt(distance->second, *(expr->name), value);
+    }
+    else
+    {
+        globals->assign(*(expr->name), value);
+    }
 
     return value;
 }
@@ -281,7 +310,7 @@ boost::any Interpreter::visitUnaryExpression(shared_ptr<Environment> env, shared
 
 boost::any Interpreter::visitVariableExpression(shared_ptr<Environment> env, shared_ptr<const Variable> expr) const
 {
-    return env->get(*(expr->name));
+    return lookUpVariable(env, expr->name, expr);
 }
 
 /* 
@@ -390,7 +419,12 @@ void Interpreter::executeBlock(shared_ptr<Environment> env, shared_ptr<list<shar
         execute(env, statement);
 }
 
-void Interpreter::interpret(vector<shared_ptr<const Statement>> statements)
+void Interpreter::resolve(std::shared_ptr<Environment> env, std::shared_ptr<const Expression> expr, int depth) const
+{
+    (*locals)[expr] = depth; // ->insert(make_pair(expr, depth));
+}
+
+void Interpreter::interpret(vector<shared_ptr<const Statement>> &statements)
 {
     try
     {

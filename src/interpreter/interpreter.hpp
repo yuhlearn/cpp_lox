@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <unordered_map>
 #include <boost/any.hpp>
 
 namespace Lox
@@ -33,9 +34,14 @@ namespace Lox
         static std::string stringify(const Value &value);
         void checkNumberOperand(const Token &token, const Value &right) const;
         void checkNumberOperands(const Token &token, const Value &left, const Value &right) const;
+        boost::any lookUpVariable(std::shared_ptr<Environment> env,
+                                  std::shared_ptr<const Token> name,
+                                  std::shared_ptr<const Expression> expr) const;
 
     public:
-        std::shared_ptr<Environment> globals;
+        const std::shared_ptr<Environment> environment;
+        const std::shared_ptr<Environment> globals;
+        const std::shared_ptr<std::unordered_map<std::shared_ptr<const Expression>, int>> locals;
 
         Interpreter(void);
         // EXPRESSIONS
@@ -64,7 +70,8 @@ namespace Lox
         // OTHER
         void executeBlock(std::shared_ptr<Environment> env, std::shared_ptr<std::list<std::shared_ptr<Statement>>> statements) const;
         void execute(std::shared_ptr<Environment> env, std::shared_ptr<const Statement> stmt) const;
-        void interpret(std::vector<std::shared_ptr<const Statement>> statements);
+        void resolve(std::shared_ptr<Environment> env, std::shared_ptr<const Expression> expr, int depth) const;
+        void interpret(std::vector<std::shared_ptr<const Statement>> &statements);
     };
 }
 

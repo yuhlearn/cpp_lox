@@ -44,6 +44,7 @@ namespace Lox
 	{
 	public:
 		virtual ~Expression(void){};
+		Expression(void){};
 		virtual boost::any accept(std::shared_ptr<Environment> env, const ExpressionVisitor &visitor) const = 0;
 	};
 

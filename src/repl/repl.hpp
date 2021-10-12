@@ -4,6 +4,7 @@
 #include <interpreter/interpreter.hpp>
 #include <scanner/token.hpp>
 #include <string>
+#include <resolver/resolver.hpp>
 
 namespace Lox
 {
@@ -16,6 +17,7 @@ namespace Lox
         static void report(int line, std::string where, std::string message);
         static std::istream &getline(std::istream &__is, std::string &__str);
         static Interpreter interpreter;
+        static Resolver resolver;
 
     public:
         static void

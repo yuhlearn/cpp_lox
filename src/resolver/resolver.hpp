@@ -13,12 +13,20 @@
 
 namespace Lox
 {
-    class Resolver : public ExpressionVisitor, public StatementVisitor
+    enum FunctionType
+    {
+        NONE,
+        FUNCTION
+    };
+
+    class Resolver : public ExpressionVisitor,
+                     public StatementVisitor
     {
     private:
         const Interpreter &interpreter;
 
-        const std::unique_ptr<std::deque<std::unordered_map<std::string, bool>>> scopes;
+        const std::shared_ptr<std::deque<std::unordered_map<std::string, bool>>> scopes;
+        std::unique_ptr<FunctionType> currentFunction;
 
         void define(std::shared_ptr<const Token> name) const;
         void declare(std::shared_ptr<const Token> name) const;
@@ -30,10 +38,12 @@ namespace Lox
         void resolveLocal(std::shared_ptr<Environment> env,
                           std::shared_ptr<const Expression> expr,
                           std::shared_ptr<const Token> name) const;
-        void resolveFunction(std::shared_ptr<Environment> env, std::shared_ptr<const Function> function) const;
+        void resolveFunction(std::shared_ptr<Environment> env,
+                             std::shared_ptr<const Function> function,
+                             const FunctionType type) const;
 
     public:
-        Resolver(Interpreter &Interpreter);
+        Resolver(Interpreter &interpreter);
 
         // EXPRESSIONS
         boost::any visitAssignExpression(std::shared_ptr<Environment> env, std::shared_ptr<const Assign> expr) const override;
@@ -59,6 +69,9 @@ namespace Lox
         boost::any visitReturnStatement(std::shared_ptr<Environment> env, std::shared_ptr<const Return> stmt) const override;
         boost::any visitVarStatement(std::shared_ptr<Environment> env, std::shared_ptr<const Var> stmt) const override;
         boost::any visitWhileStatement(std::shared_ptr<Environment> env, std::shared_ptr<const While> stmt) const override;
+
+        // OTHER
+        void resolve(std::shared_ptr<Environment> env, std::vector<std::shared_ptr<const Statement>> &statements) const;
     };
 }
 

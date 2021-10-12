@@ -5,8 +5,11 @@ using namespace Lox;
 using namespace std;
 
 Resolver::Resolver(Interpreter &interpreter)
-    : interpreter(interpreter), scopes(new deque<unordered_map<string, bool>>())
+    : interpreter(interpreter),
+      scopes(make_shared<deque<unordered_map<string, bool>>>()),
+      currentFunction(new FunctionType())
 {
+    *currentFunction = FunctionType::NONE;
 }
 
 void Resolver::define(shared_ptr<const Token> name) const
@@ -14,7 +17,7 @@ void Resolver::define(shared_ptr<const Token> name) const
     if (scopes->empty())
         return;
 
-    scopes->back().insert(make_pair(name->lexeme, true));
+    scopes->back()[name->lexeme] = true;
 }
 
 void Resolver::declare(shared_ptr<const Token> name) const
@@ -23,6 +26,10 @@ void Resolver::declare(shared_ptr<const Token> name) const
         return;
 
     unordered_map<string, bool> &scope = scopes->back();
+
+    if (scope.find(name->lexeme) != scope.end())
+        REPL::error(*name, "Already a variable with this name in this scope.");
+
     scope[name->lexeme] = false;
 }
 
@@ -52,6 +59,12 @@ void Resolver::resolve(shared_ptr<Environment> env, shared_ptr<list<shared_ptr<S
         resolve(env, stmt);
 }
 
+void Resolver::resolve(shared_ptr<Environment> env, vector<shared_ptr<const Statement>> &statements) const
+{
+    for (auto stmt : statements)
+        resolve(env, stmt);
+}
+
 void Resolver::resolveLocal(shared_ptr<Environment> env,
                             shared_ptr<const Expression> expr,
                             shared_ptr<const Token> name) const
@@ -61,9 +74,11 @@ void Resolver::resolveLocal(shared_ptr<Environment> env,
 
     while (scope != scopes->rend())
     {
-        if (auto search = scope->find(name->lexeme); search != scope->end())
+        auto search = scope->find(name->lexeme);
+
+        if (search != scope->end())
         {
-            //interpreter.resolve(env, expr, depth);
+            interpreter.resolve(env, expr, depth);
             return;
         }
         scope++;
@@ -71,8 +86,13 @@ void Resolver::resolveLocal(shared_ptr<Environment> env,
     }
 }
 
-void Resolver::resolveFunction(shared_ptr<Environment> env, shared_ptr<const Function> function) const
+void Resolver::resolveFunction(shared_ptr<Environment> env,
+                               shared_ptr<const Function> function,
+                               const FunctionType type) const
 {
+    FunctionType enclosingFunction = *currentFunction;
+    *currentFunction = type;
+
     beginScope();
 
     for (auto param : *function->params)
@@ -83,6 +103,8 @@ void Resolver::resolveFunction(shared_ptr<Environment> env, shared_ptr<const Fun
 
     resolve(env, function->body);
     endScope();
+
+    *currentFunction = enclosingFunction;
 }
 
 // EXPRESSIONS
@@ -147,7 +169,7 @@ boost::any Resolver::visitVariableExpression(shared_ptr<Environment> env, shared
     if (!scopes->empty())
     {
         auto search = scopes->back().find(expr->name->lexeme);
-        if (search == scopes->back().end() || !search->second)
+        if (search != scopes->back().end() && search->second == false)
             REPL::error(*(expr->name), "Can't read local variable in its own initializer.");
     }
 
@@ -167,7 +189,8 @@ boost::any Resolver::visitBlockStatement(shared_ptr<Environment> env, shared_ptr
 
 boost::any Resolver::visitClassStatement(shared_ptr<Environment> env, shared_ptr<const Class> stmt) const { return nullptr; }
 
-boost::any Resolver::visitExpressionStatementStatement(shared_ptr<Environment> env, shared_ptr<const ExpressionStatement> stmt) const
+boost::any Resolver::visitExpressionStatementStatement(shared_ptr<Environment> env,
+                                                       shared_ptr<const ExpressionStatement> stmt) const
 {
     resolve(env, stmt->expression);
     return nullptr;
@@ -178,7 +201,7 @@ boost::any Resolver::visitFunctionStatement(shared_ptr<Environment> env, shared_
     declare(stmt->name);
     define(stmt->name);
 
-    resolveFunction(env, stmt);
+    resolveFunction(env, stmt, FunctionType::FUNCTION);
     return nullptr;
 }
 
@@ -201,6 +224,9 @@ boost::any Resolver::visitPrintStatement(shared_ptr<Environment> env, shared_ptr
 
 boost::any Resolver::visitReturnStatement(shared_ptr<Environment> env, shared_ptr<const Return> stmt) const
 {
+    if (*currentFunction == FunctionType::NONE)
+        REPL::error(*(stmt->keyword), "Can't return from top-level code.");
+
     if (stmt->value != nullptr)
         resolve(env, stmt->value);
 

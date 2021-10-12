@@ -13,6 +13,7 @@ using namespace std;
 bool REPL::hadError = false;
 bool REPL::hadRuntimeError = false;
 Interpreter REPL::interpreter = Interpreter();
+Resolver REPL::resolver = Resolver(interpreter);
 
 void REPL::error(int line, std::string message)
 {
@@ -45,6 +46,12 @@ void REPL::run(string source)
     const vector<Token> &tokens = scanner.scanTokens();
     Parser parser = Parser(tokens);
     vector<shared_ptr<const Statement>> statements = parser.parse();
+
+    if (hadError)
+        return;
+
+    Resolver resolver = Resolver(interpreter);
+    resolver.resolve(interpreter.globals, statements);
 
     if (hadError)
         return;

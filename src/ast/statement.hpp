@@ -39,6 +39,7 @@ namespace Lox
 	{
 	public:
 		virtual ~Statement(void){};
+		Statement(void){};
 		virtual boost::any accept(std::shared_ptr<Environment> env, const StatementVisitor &visitor) const = 0;
 	};
 

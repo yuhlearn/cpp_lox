@@ -32,7 +32,18 @@ void Environment::assign(const Token &name, const boost::any &value)
         enclosing->assign(name, value);
         return;
     }
+    throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
+}
 
+void Environment::assignAt(const int distance, const Token &name, const boost::any &value)
+{
+    Environment *env = ancestor(distance);
+
+    if (env->values.find(name.lexeme) != env->values.end())
+    {
+        env->values[name.lexeme] = value;
+        return;
+    }
     throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
 }
 
@@ -46,5 +57,27 @@ boost::any Environment::get(const Token &name)
     if (enclosing != nullptr)
         return enclosing->get(name);
 
-    throw RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
+    throw RuntimeError(name, "Undefined global variable '" + name.lexeme + "'.");
+}
+
+boost::any Environment::getAt(const int distance, const Token &name)
+{
+    Environment *env = ancestor(distance);
+
+    auto search = env->values.find(name.lexeme);
+
+    if (search != values.end())
+        return search->second;
+
+    throw RuntimeError(name, "Undefined local variable '" + name.lexeme + "'.");
+}
+
+Environment *Environment::ancestor(const int distance)
+{
+    Environment *env = this;
+
+    for (int i = 0; i < distance; i++)
+        env = &(*env->enclosing);
+
+    return env;
 }
